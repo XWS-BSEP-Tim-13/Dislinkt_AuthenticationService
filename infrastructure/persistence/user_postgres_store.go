@@ -41,6 +41,17 @@ func (store *AuthenticationPostgresStore) GetById(id string) (*domain.User, erro
 	return &domain.User{}, fmt.Errorf("User with id=%s not found", id)
 }
 
+func (store *AuthenticationPostgresStore) GetByUsername(username string) (*domain.User, error) {
+	var user domain.User
+	result := store.db.Where("username = ?", username).Find(&user)
+
+	if result.RowsAffected > 0 {
+		return &user, nil
+	}
+
+	return &domain.User{}, fmt.Errorf("User with username=%s not found", username)
+}
+
 func (store *AuthenticationPostgresStore) GetAll() (*[]domain.User, error) {
 	var users []domain.User
 	result := store.db.Find(&users)

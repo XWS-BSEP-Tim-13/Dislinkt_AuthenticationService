@@ -35,18 +35,16 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 }
 
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
-	//companies, err := handler.service.GetAll()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//response := &pb.GetAllResponse{
-	//	Companies: []*pb.Company{},
-	//}
-	//for _, company := range companies {
-	//	current := mapUser(company)
-	//	response.Companies = append(response.Companies, current)
-	//}
-	return nil, nil
+	user := mapUserToDomain(request.User)
+	newUser, err := handler.service.Register(user)
+	if err != nil {
+		return nil, err
+	}
+
+	response := &pb.RegisterResponse{
+		Username: (*newUser).Username,
+	}
+	return response, nil
 }
 
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {

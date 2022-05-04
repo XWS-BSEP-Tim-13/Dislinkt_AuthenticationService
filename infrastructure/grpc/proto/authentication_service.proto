@@ -53,6 +53,7 @@ message RegisterRequest {
 }
 
 message RegisterResponse {
+  string username = 1;
 }
 
 message AuthorizationRequest {
