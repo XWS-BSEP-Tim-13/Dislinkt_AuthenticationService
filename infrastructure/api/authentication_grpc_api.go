@@ -2,6 +2,7 @@ package api
 
 import (
 	"context"
+	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 )
@@ -36,13 +37,15 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	user := mapUserToDomain(request.User)
+	fmt.Println(user)
 	newUser, err := handler.service.Register(user)
+	fmt.Println(newUser)
 	if err != nil {
 		return nil, err
 	}
 
 	response := &pb.RegisterResponse{
-		Username: (*newUser).Username,
+		Username: newUser.Username,
 	}
 	return response, nil
 }
