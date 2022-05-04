@@ -12,10 +12,15 @@ func NewAuthenticationService(store domain.UserStore) *AuthenticationService {
 	}
 }
 
-func (service *AuthenticationService) GetAll() (*[]domain.User, error) {
-	return service.store.GetAll()
+func (service *AuthenticationService) Login(credentials *[]domain.Credentials) (*domain.User, error) {
+	return nil, nil
 }
 
-func (service *AuthenticationService) DeleteAll() {
-	service.store.DeleteAll()
+func (service *AuthenticationService) Register(user *domain.User) (*domain.User, error) {
+	newUser, _ := service.store.Create(user)
+	return newUser, nil
+}
+
+func (service *AuthenticationService) IsAuthorized(token *domain.Token) {
+	//service.store.Create()
 }

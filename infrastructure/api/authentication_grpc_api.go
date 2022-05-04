@@ -7,7 +7,7 @@ import (
 )
 
 type AuthenticationHandler struct {
-	pb.UnimplementedCompanyServiceServer
+	pb.UnimplementedAuthenticationServiceServer
 	service *application.AuthenticationService
 }
 
@@ -17,8 +17,8 @@ func NewAuthenticationHandler(service *application.AuthenticationService) *Authe
 	}
 }
 
-func (handler *AuthenticationHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
-	id := request.Id
+func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.LoginRequest) (*pb.Token, error) {
+	/*id := request.Id
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
 		return nil, err
@@ -28,23 +28,38 @@ func (handler *AuthenticationHandler) Get(ctx context.Context, request *pb.GetRe
 		return nil, err
 	}
 	companyPb := mapUser(company)
-	response := &pb.GetResponse{
-		Company: companyPb,
-	}
-	return response, nil
+	response := &pb.Token{
+		//Company: companyPb,
+	}*/
+	return nil, nil
 }
 
-func (handler *AuthenticationHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
-	companies, err := handler.service.GetAll()
-	if err != nil {
-		return nil, err
-	}
-	response := &pb.GetAllResponse{
-		Companies: []*pb.Company{},
-	}
-	for _, company := range companies {
-		current := mapUser(company)
-		response.Companies = append(response.Companies, current)
-	}
-	return response, nil
+func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	//companies, err := handler.service.GetAll()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//response := &pb.GetAllResponse{
+	//	Companies: []*pb.Company{},
+	//}
+	//for _, company := range companies {
+	//	current := mapUser(company)
+	//	response.Companies = append(response.Companies, current)
+	//}
+	return nil, nil
+}
+
+func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
+	//companies, err := handler.service.GetAll()
+	//if err != nil {
+	//	return nil, err
+	//}
+	//response := &pb.GetAllResponse{
+	//	Companies: []*pb.Company{},
+	//}
+	//for _, company := range companies {
+	//	current := mapUser(company)
+	//	response.Companies = append(response.Companies, current)
+	//}
+	return nil, nil
 }
