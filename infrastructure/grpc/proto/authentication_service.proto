@@ -7,7 +7,7 @@ package post;
 import "google/api/annotations.proto";
 
 service AuthenticationService{
-  rpc Login(LoginRequest) returns(LoginResponse) {
+  rpc Login(LoginRequest) returns(Token) {
     option (google.api.http) = {
       post: "/login"
       body: "credentials"
@@ -27,28 +27,36 @@ service AuthenticationService{
   }
 }
 
-message LoginRequest {
+message Credentials {
   string username = 1;
   string password = 2;
 }
 
-message LoginResponse {
+message User {
+  string username = 1;
+  string password = 2;
+  string role = 3;
+}
+
+message Token {
   string role        = 1;
   string username    = 2;
   string token = 3;
 }
 
+message LoginRequest {
+  Credentials credentials = 1;
+}
+
 message RegisterRequest {
-  string username = 1;
-  string password = 2;
-  string role = 3;
+  User user = 1;
 }
 
 message RegisterResponse {
 }
 
 message AuthorizationRequest {
-  string token = 1;
+  Token token = 1;
 }
 
 message AuthorizationResponse {

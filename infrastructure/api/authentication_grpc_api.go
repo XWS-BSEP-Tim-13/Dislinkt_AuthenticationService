@@ -2,23 +2,22 @@ package api
 
 import (
 	"context"
-	"github.com/XWS-BSEP-Tim-13/Dislinkt_CompanyService/application"
-	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_CompanyService/infrastructure/grpc/proto"
-	"go.mongodb.org/mongo-driver/bson/primitive"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
+	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 )
 
-type CompanyHandler struct {
+type AuthenticationHandler struct {
 	pb.UnimplementedCompanyServiceServer
-	service *application.CompanyService
+	service *application.AuthenticationService
 }
 
-func NewCompanyHandler(service *application.CompanyService) *CompanyHandler {
-	return &CompanyHandler{
+func NewAuthenticationHandler(service *application.AuthenticationService) *AuthenticationHandler {
+	return &AuthenticationHandler{
 		service: service,
 	}
 }
 
-func (handler *CompanyHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
+func (handler *AuthenticationHandler) Get(ctx context.Context, request *pb.GetRequest) (*pb.GetResponse, error) {
 	id := request.Id
 	objectId, err := primitive.ObjectIDFromHex(id)
 	if err != nil {
@@ -35,7 +34,7 @@ func (handler *CompanyHandler) Get(ctx context.Context, request *pb.GetRequest) 
 	return response, nil
 }
 
-func (handler *CompanyHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
+func (handler *AuthenticationHandler) GetAll(ctx context.Context, request *pb.GetAllRequest) (*pb.GetAllResponse, error) {
 	companies, err := handler.service.GetAll()
 	if err != nil {
 		return nil, err
