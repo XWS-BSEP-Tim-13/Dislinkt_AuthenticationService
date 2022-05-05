@@ -20,22 +20,15 @@ func NewAuthenticationHandler(service *application.AuthenticationService) *Authe
 }
 
 func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.LoginRequest) (*pb.Token, error) {
-	/*fmt.Println((*request).Credentials)
-	//user := mapUserToDomain(request.Credentials)
-	//fmt.Println(user)
-	newUser, err := handler.service.Register(user)
-	fmt.Println(*newUser)
+	credentials := mapCredentialsToDomain(request.Credentials)
+	token, err := handler.service.Login(credentials)
+
 	if err != nil {
-		return nil, err
+		return nil, status.Error(401, "Bad credentials!")
 	}
 
-	response := &pb.Token{
-		Role:     newUser.Username,
-		Username: newUser.Username,
-		Token:    "",
-	}
-	return response, nil*/
-	return nil, nil
+	tokenPB := mapTokenToPB(token)
+	return tokenPB, nil
 }
 
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
@@ -44,7 +37,7 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 	fmt.Println(user)
 	newUser, err := handler.service.Register(user)
 	if err != nil {
-		return nil, status.Error(400, "username already exists")
+		return nil, status.Error(400, "Username already exists!")
 	}
 
 	response := &pb.RegisterResponse{

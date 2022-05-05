@@ -23,11 +23,19 @@ func mapUserToDomain(user *pb.User) *domain.User {
 	return userDomain
 }
 
-func mapToken(token *domain.Token) *pb.Token {
+func mapTokenToPB(token *domain.Token) *pb.Token {
 	tokenPb := &pb.Token{
 		Role:     token.Role,
 		Username: token.Username,
 		Token:    token.TokenString,
 	}
 	return tokenPb
+}
+
+func mapCredentialsToDomain(credentials *pb.Credentials) *domain.Credentials {
+	credentialsDomain := &domain.Credentials{
+		Username: (*credentials).Username,
+		Password: (*credentials).Password,
+	}
+	return credentialsDomain
 }
