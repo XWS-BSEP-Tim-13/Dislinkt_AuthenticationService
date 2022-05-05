@@ -21,7 +21,7 @@ func (service *AuthenticationService) Login(credentials *[]domain.Credentials) (
 }
 
 func (service *AuthenticationService) Register(user *domain.User) (*domain.User, error) {
-	dbUser, _ := service.store.GetByUsername(user.Username)
+	dbUser, _ := service.store.GetByUsername((*user).Username)
 
 	if dbUser.Username != "" {
 		err := errors.New("username already exists")
@@ -29,7 +29,7 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 	}
 
 	var err error
-	user.Password, err = generateHashPassword(user.Password)
+	(*user).Password, err = generateHashPassword((*user).Password)
 	if err != nil {
 		err := errors.New("error in hashing password")
 		return nil, err

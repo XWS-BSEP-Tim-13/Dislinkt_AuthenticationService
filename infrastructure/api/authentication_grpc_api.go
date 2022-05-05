@@ -36,10 +36,11 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 }
 
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	fmt.Println((*request).User)
 	user := mapUserToDomain(request.User)
 	fmt.Println(user)
 	newUser, err := handler.service.Register(user)
-	fmt.Println(newUser)
+	fmt.Println(*newUser)
 	if err != nil {
 		return nil, err
 	}

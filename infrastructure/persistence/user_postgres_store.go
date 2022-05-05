@@ -26,11 +26,11 @@ func (store *AuthenticationPostgresStore) Create(user *domain.User) (*domain.Use
 		return nil, result.Error
 	}
 	var newUser *domain.User
-	newUser, _ = store.GetById(user.UserId)
+	newUser, _ = store.GetById(user.ID)
 	return newUser, nil
 }
 
-func (store *AuthenticationPostgresStore) GetById(id string) (*domain.User, error) {
+func (store *AuthenticationPostgresStore) GetById(id int) (*domain.User, error) {
 	var user domain.User
 	result := store.db.Find(&user, id)
 
