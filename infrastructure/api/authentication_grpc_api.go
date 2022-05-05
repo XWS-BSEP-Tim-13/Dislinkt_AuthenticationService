@@ -47,16 +47,7 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 }
 
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
-	//companies, err := handler.service.GetAll()
-	//if err != nil {
-	//	return nil, err
-	//}
-	//response := &pb.GetAllResponse{
-	//	Companies: []*pb.Company{},
-	//}
-	//for _, company := range companies {
-	//	current := mapUser(company)
-	//	response.Companies = append(response.Companies, current)
-	//}
+
 	return nil, nil
 }
+
