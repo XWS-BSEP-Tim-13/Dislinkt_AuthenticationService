@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
+	"google.golang.org/grpc/status"
 )
 
 type AuthenticationHandler struct {
@@ -19,19 +20,21 @@ func NewAuthenticationHandler(service *application.AuthenticationService) *Authe
 }
 
 func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.LoginRequest) (*pb.Token, error) {
-	/*id := request.Id
-	objectId, err := primitive.ObjectIDFromHex(id)
+	/*fmt.Println((*request).Credentials)
+	//user := mapUserToDomain(request.Credentials)
+	//fmt.Println(user)
+	newUser, err := handler.service.Register(user)
+	fmt.Println(*newUser)
 	if err != nil {
 		return nil, err
 	}
-	company, err := handler.service.Get(objectId)
-	if err != nil {
-		return nil, err
-	}
-	companyPb := mapUser(company)
+
 	response := &pb.Token{
-		//Company: companyPb,
-	}*/
+		Role:     newUser.Username,
+		Username: newUser.Username,
+		Token:    "",
+	}
+	return response, nil*/
 	return nil, nil
 }
 
@@ -40,9 +43,8 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 	user := mapUserToDomain(request.User)
 	fmt.Println(user)
 	newUser, err := handler.service.Register(user)
-	fmt.Println(*newUser)
 	if err != nil {
-		return nil, err
+		return nil, status.Error(400, "username already exists")
 	}
 
 	response := &pb.RegisterResponse{

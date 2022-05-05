@@ -16,14 +16,13 @@ func NewAuthenticationService(store domain.UserStore) *AuthenticationService {
 	}
 }
 
-func (service *AuthenticationService) Login(credentials *[]domain.Credentials) (*domain.User, error) {
+func (service *AuthenticationService) Login(credentials *[]domain.Credentials) (*domain.Token, error) {
 	return nil, nil
 }
 
 func (service *AuthenticationService) Register(user *domain.User) (*domain.User, error) {
 	dbUser, _ := service.store.GetByUsername((*user).Username)
-
-	if dbUser.Username != "" {
+	if (*dbUser).Username != "" {
 		err := errors.New("username already exists")
 		return nil, err
 	}
