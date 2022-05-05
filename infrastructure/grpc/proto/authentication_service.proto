@@ -1,0 +1,66 @@
+syntax = "proto3";
+
+option go_package = "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto";
+
+package post;
+
+import "google/api/annotations.proto";
+
+service AuthenticationService{
+  rpc Login(LoginRequest) returns(Token) {
+    option (google.api.http) = {
+      post: "/login"
+      body: "credentials"
+    };
+  }
+  rpc Register(RegisterRequest) returns(RegisterResponse) {
+    option (google.api.http) = {
+      post: "/register"
+      body: "user"
+    };
+  }
+  rpc IsAuthorized(AuthorizationRequest) returns(AuthorizationResponse) {
+    option (google.api.http) = {
+      post: "/is-authorized"
+      body: "token"
+    };
+  }
+}
+
+message Credentials {
+  string username = 1;
+  string password = 2;
+}
+
+message User {
+  string username = 1;
+  string password = 2;
+  string role = 3;
+}
+
+message Token {
+  string role        = 1;
+  string username    = 2;
+  string token = 3;
+}
+
+message LoginRequest {
+  Credentials credentials = 1;
+}
+
+message RegisterRequest {
+  User user = 1;
+}
+
+message RegisterResponse {
+  string username = 1;
+}
+
+message AuthorizationRequest {
+  Token token = 1;
+}
+
+message AuthorizationResponse {
+}
+
+
