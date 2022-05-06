@@ -33,9 +33,9 @@ message Credentials {
 }
 
 message User {
-  string username = 1;
-  string password = 2;
-  string role = 3;
+  string username = 1 [json_name="username"];
+  string password = 2 [json_name="password"];
+  string role = 3     [json_name="role"];
 }
 
 message Token {
