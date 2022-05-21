@@ -25,6 +25,7 @@ type AuthenticationServiceClient interface {
 	Login(ctx context.Context, in *LoginRequest, opts ...grpc.CallOption) (*Token, error)
 	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
 	IsAuthorized(ctx context.Context, in *AuthorizationRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
+	ForgotPassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -62,6 +63,15 @@ func (c *authenticationServiceClient) IsAuthorized(ctx context.Context, in *Auth
 	return out, nil
 }
 
+func (c *authenticationServiceClient) ForgotPassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error) {
+	out := new(AuthorizationResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/ForgotPassword", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -69,6 +79,7 @@ type AuthenticationServiceServer interface {
 	Login(context.Context, *LoginRequest) (*Token, error)
 	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
 	IsAuthorized(context.Context, *AuthorizationRequest) (*AuthorizationResponse, error)
+	ForgotPassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -84,6 +95,9 @@ func (UnimplementedAuthenticationServiceServer) Register(context.Context, *Regis
 }
 func (UnimplementedAuthenticationServiceServer) IsAuthorized(context.Context, *AuthorizationRequest) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method IsAuthorized not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) ForgotPassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ForgotPassword not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -152,6 +166,24 @@ func _AuthenticationService_IsAuthorized_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_ForgotPassword_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ForgotPasswordRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).ForgotPassword(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/ForgotPassword",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).ForgotPassword(ctx, req.(*ForgotPasswordRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -170,6 +202,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "IsAuthorized",
 			Handler:    _AuthenticationService_IsAuthorized_Handler,
+		},
+		{
+			MethodName: "ForgotPassword",
+			Handler:    _AuthenticationService_ForgotPassword_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

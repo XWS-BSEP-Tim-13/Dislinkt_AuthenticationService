@@ -3,17 +3,21 @@ package application
 import (
 	"errors"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
+	"github.com/google/uuid"
+	"time"
 )
 
 type AuthenticationService struct {
 	store      domain.UserStore
 	jwtManager JwtManager
+	tokenStore domain.ForgotPasswordTokenStore
 }
 
-func NewAuthenticationService(store domain.UserStore) *AuthenticationService {
+func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore) *AuthenticationService {
 	return &AuthenticationService{
 		store:      store,
 		jwtManager: *NewJwtManager(),
+		tokenStore: tokenStore,
 	}
 }
 
@@ -60,6 +64,15 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 
 	newUser, err := service.store.Create(user)
 	return newUser, err
+}
+
+func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPasswordToken, error) {
+	var request = domain.ForgotPasswordToken{
+		Email:        email,
+		Token:        uuid.New().String(),
+		ExpiringDate: time.Now().Local().Add(time.Hour * time.Duration(4)),
+	}
+	return service.tokenStore.Create(&request)
 }
 
 func (service *AuthenticationService) IsAuthorized(token *domain.Token) {

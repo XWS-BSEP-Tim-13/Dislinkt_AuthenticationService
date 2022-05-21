@@ -27,8 +27,10 @@ func NewServer(config *config.Config) *Server {
 func (server *Server) Start() {
 	postgresClient := server.initPostgresClient()
 	productStore := server.initProductStore(postgresClient)
-	productService := server.initProductService(productStore)
-	productHandler := server.initProductHandler(productService)
+	tokenStore := server.initTokenStore(postgresClient)
+	mailService := server.initMailService()
+	productService := server.initProductService(productStore, tokenStore)
+	productHandler := server.initProductHandler(productService, mailService)
 
 	server.startGrpcServer(productHandler)
 }
@@ -42,6 +44,13 @@ func (server *Server) initPostgresClient() *gorm.DB {
 		log.Fatal(err)
 	}
 	return client
+}
+func (server *Server) initTokenStore(client *gorm.DB) domain.ForgotPasswordTokenStore {
+	store, err := persistence.NewForgotPasswordTokenPostgresStore(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return store
 }
 
 func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
@@ -59,12 +68,16 @@ func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
 	return store
 }
 
-func (server *Server) initProductService(store domain.UserStore) *application.AuthenticationService {
-	return application.NewAuthenticationService(store)
+func (server *Server) initMailService() *application.MailService {
+	return application.NewMailServiceService()
 }
 
-func (server *Server) initProductHandler(service *application.AuthenticationService) *api.AuthenticationHandler {
-	return api.NewAuthenticationHandler(service)
+func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore) *application.AuthenticationService {
+	return application.NewAuthenticationService(store, tokenStore)
+}
+
+func (server *Server) initProductHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {
+	return api.NewAuthenticationHandler(service, mailService)
 }
 
 func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationHandler) {

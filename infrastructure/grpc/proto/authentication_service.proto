@@ -25,6 +25,16 @@ service AuthenticationService{
       body: "token"
     };
   }
+
+  rpc ForgotPassword(ForgotPasswordRequest) returns(AuthorizationResponse) {
+    option (google.api.http) = {
+      post: "/forgot-password"
+      body: "email"
+    };
+  }
+}
+message ForgotPasswordRequest{
+  string email = 1;
 }
 
 message Credentials {

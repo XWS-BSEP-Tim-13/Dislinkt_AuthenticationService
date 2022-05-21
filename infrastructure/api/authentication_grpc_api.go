@@ -10,12 +10,14 @@ import (
 
 type AuthenticationHandler struct {
 	pb.UnimplementedAuthenticationServiceServer
-	service *application.AuthenticationService
+	service     *application.AuthenticationService
+	mailService *application.MailService
 }
 
-func NewAuthenticationHandler(service *application.AuthenticationService) *AuthenticationHandler {
+func NewAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService) *AuthenticationHandler {
 	return &AuthenticationHandler{
-		service: service,
+		service:     service,
+		mailService: mailService,
 	}
 }
 
@@ -46,8 +48,18 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, request *pb.ForgotPasswordRequest) (*pb.AuthorizationResponse, error) {
+	email := request.Email
+	resp, err := handler.service.SaveToken(email)
+	if err != nil {
+		return nil, err
+	}
+	handler.mailService.SendForgotPasswordMail(resp.Token, resp.Email)
+	response := &pb.AuthorizationResponse{}
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 
 	return nil, nil
 }
-
