@@ -12,6 +12,7 @@ var users = []*domain.User{
 		ID:       1,
 		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
 		Role:     "USER",
+		Email:    "maraipera5@gmail.com",
 	},
 }
 

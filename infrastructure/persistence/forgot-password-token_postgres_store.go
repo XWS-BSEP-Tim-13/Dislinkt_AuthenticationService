@@ -16,7 +16,7 @@ func (store ForgotPasswordTokenPostgresStore) DeleteAll() {
 }
 
 func NewForgotPasswordTokenPostgresStore(db *gorm.DB) (domain.ForgotPasswordTokenStore, error) {
-	//db.Migrator().DropTable(&domain.ForgotPasswordToken{})
+	db.Migrator().DropTable(&domain.ForgotPasswordToken{})
 	err := db.AutoMigrate(&domain.ForgotPasswordToken{})
 	if err != nil {
 		fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n")
