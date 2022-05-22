@@ -11,8 +11,8 @@ type User struct {
 }
 
 type ForgotPasswordToken struct {
-	ID           int       `gorm:"primaryKey"`
-	Token        string    `gorm:"unique"`
-	Email        string    `gorm:"unique"`
+	ID           int    `gorm:"primaryKey"`
+	Token        string `gorm:"unique"`
+	Email        string
 	ExpiringDate time.Time `gorm:"date"`
 }

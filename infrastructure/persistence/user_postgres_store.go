@@ -22,6 +22,7 @@ func NewAuthenticationPostgresStore(db *gorm.DB) (domain.UserStore, error) {
 
 func (store *AuthenticationPostgresStore) Create(user *domain.User) (*domain.User, error) {
 	result := store.db.Create(user)
+	fmt.Printf("Creating user %d\n", user.ID)
 	if result.Error != nil {
 		return nil, result.Error
 	}

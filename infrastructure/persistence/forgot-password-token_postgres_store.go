@@ -10,9 +10,16 @@ type ForgotPasswordTokenPostgresStore struct {
 	db *gorm.DB
 }
 
+func (store ForgotPasswordTokenPostgresStore) DeleteAll() {
+	store.db.Session(&gorm.Session{AllowGlobalUpdate: true}).
+		Delete(&domain.ForgotPasswordToken{})
+}
+
 func NewForgotPasswordTokenPostgresStore(db *gorm.DB) (domain.ForgotPasswordTokenStore, error) {
+	//db.Migrator().DropTable(&domain.ForgotPasswordToken{})
 	err := db.AutoMigrate(&domain.ForgotPasswordToken{})
 	if err != nil {
+		fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n")
 		return nil, err
 	}
 	return &ForgotPasswordTokenPostgresStore{
@@ -22,11 +29,16 @@ func NewForgotPasswordTokenPostgresStore(db *gorm.DB) (domain.ForgotPasswordToke
 
 func (store ForgotPasswordTokenPostgresStore) Create(token *domain.ForgotPasswordToken) (*domain.ForgotPasswordToken, error) {
 	result := store.db.Create(token)
+	fmt.Printf("Creating token %s\n", token.Token)
 	if result.Error != nil {
+		fmt.Printf("Error while creating")
 		return nil, result.Error
 	}
-	var newToken *domain.ForgotPasswordToken
-	newToken, _ = store.GetById(newToken.ID)
+	newToken, err := store.GetById(token.ID)
+	if err != nil {
+		fmt.Printf("Error while creating")
+		return nil, result.Error
+	}
 	return newToken, nil
 }
 
@@ -38,7 +50,7 @@ func (store ForgotPasswordTokenPostgresStore) GetById(id int) (*domain.ForgotPas
 		return &token, nil
 	}
 
-	return &domain.ForgotPasswordToken{}, fmt.Errorf("User with id=%s not found", id)
+	return &domain.ForgotPasswordToken{}, fmt.Errorf("user with id=%s not found", id)
 }
 
 func (store ForgotPasswordTokenPostgresStore) GetByToken(tokenS string) (*domain.ForgotPasswordToken, error) {
@@ -49,5 +61,5 @@ func (store ForgotPasswordTokenPostgresStore) GetByToken(tokenS string) (*domain
 		return &token, nil
 	}
 
-	return &domain.ForgotPasswordToken{}, fmt.Errorf("Token with token=%s not found", tokenS)
+	return &domain.ForgotPasswordToken{}, fmt.Errorf("token with token=%s not found", tokenS)
 }

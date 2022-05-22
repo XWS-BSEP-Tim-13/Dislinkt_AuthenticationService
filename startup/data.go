@@ -1,32 +1,25 @@
 package startup
 
-/*
-var posts = []*domain.Post{
+import (
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
+	"github.com/google/uuid"
+	"time"
+)
+
+var users = []*domain.User{
 	{
-		Id:       getObjectId("623b0cc3a34d25d8567f9f82"),
-		Username: "anagavrilovic",
-		Content:  "Mrzim Go!",
-		Image:    "",
-		Likes: []string{
-			"srdjansukovic",
-			"stefanljubovic",
-			"marijakljestan",
-		},
-		Dislikes: []string{},
-		Comments: []domain.Comment{
-			{
-				Id:       getObjectId("623b0cc3a34d25d8567f9f83"),
-				Content:  "I ja isto!",
-				Date:     "",
-				Username: "srdjansukovic",
-			},
-		},
+		Username: "stefanljubovic",
+		ID:       1,
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		Role:     "USER",
 	},
 }
 
-func getObjectId(id string) primitive.ObjectID {
-	if objectId, err := primitive.ObjectIDFromHex(id); err == nil {
-		return objectId
-	}
-	return primitive.NewObjectID()
-}*/
+var tokens = []*domain.ForgotPasswordToken{
+	{
+		ID:           2,
+		Token:        uuid.New().String(),
+		Email:        "suki@gmail.com",
+		ExpiringDate: time.Now(),
+	},
+}

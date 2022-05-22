@@ -51,10 +51,13 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, request *pb.ForgotPasswordRequest) (*pb.AuthorizationResponse, error) {
 	email := request.Email
 	resp, err := handler.service.SaveToken(email)
+	fmt.Printf("Api token,%s\n", resp.Token)
 	if err != nil {
+		fmt.Println("Api error")
 		return nil, err
 	}
-	handler.mailService.SendForgotPasswordMail(resp.Token, resp.Email)
+	fmt.Printf("Sending email\n")
+	handler.mailService.SendForgotPasswordMail(resp.Token, email)
 	response := &pb.AuthorizationResponse{}
 	return response, nil
 }
