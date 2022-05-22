@@ -2,6 +2,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	"github.com/google/uuid"
 	"time"
@@ -72,6 +73,7 @@ func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPas
 		Token:        uuid.New().String(),
 		ExpiringDate: time.Now().Local().Add(time.Hour * time.Duration(4)),
 	}
+	fmt.Printf("Token created,%s\n", request.Token)
 	return service.tokenStore.Create(&request)
 }
 

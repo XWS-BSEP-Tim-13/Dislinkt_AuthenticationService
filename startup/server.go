@@ -47,8 +47,19 @@ func (server *Server) initPostgresClient() *gorm.DB {
 }
 func (server *Server) initTokenStore(client *gorm.DB) domain.ForgotPasswordTokenStore {
 	store, err := persistence.NewForgotPasswordTokenPostgresStore(client)
+	store.DeleteAll()
 	if err != nil {
+		fmt.Println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
 		log.Fatal(err)
+	}
+	//token, _ := store.GetById(1)
+	//fmt.Printf("Tokennnnn%s\n", token.Token)
+	for _, Token := range tokens {
+		_, err := store.Create(Token)
+		if err != nil {
+			fmt.Println("FATAAAAALLLLLLLLLLLLLLLLLLLLLLLLLL")
+			log.Fatal(err)
+		}
 	}
 	return store
 }
@@ -58,13 +69,13 @@ func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
 	if err != nil {
 		log.Fatal(err)
 	}
-	/*store.DeleteAll()
-	for _, Product := range products {
-		err := store.Insert(Product)
+	store.DeleteAll()
+	for _, User := range users {
+		_, err := store.Create(User)
 		if err != nil {
 			log.Fatal(err)
 		}
-	}*/
+	}
 	return store
 }
 

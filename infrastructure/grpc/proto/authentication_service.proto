@@ -32,6 +32,13 @@ service AuthenticationService{
       body: "email"
     };
   }
+
+  rpc ChangePassword(ForgotPasswordRequest) returns(AuthorizationResponse) {
+    option (google.api.http) = {
+      post: "/forgot-password"
+      body: "email"
+    };
+  }
 }
 message ForgotPasswordRequest{
   string email = 1;
