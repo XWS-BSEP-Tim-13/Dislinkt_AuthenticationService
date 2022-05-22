@@ -77,6 +77,10 @@ func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPas
 	return service.tokenStore.Create(&request)
 }
 
+func (service *AuthenticationService) CheckIfTokenExists(token string) (*domain.ForgotPasswordToken, error) {
+	return service.tokenStore.GetByToken(token)
+}
+
 func (service *AuthenticationService) IsAuthorized(token *domain.Token) {
 	//service.store.Create()
 }

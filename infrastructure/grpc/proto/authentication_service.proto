@@ -33,15 +33,40 @@ service AuthenticationService{
     };
   }
 
-  rpc ChangePassword(ForgotPasswordRequest) returns(AuthorizationResponse) {
+  rpc ChangePassword(ChangePasswordRequest) returns(AuthorizationResponse) {
     option (google.api.http) = {
-      post: "/forgot-password"
-      body: "email"
+      post: "/change-password"
+      body: "changePasswordBody"
+    };
+  }
+
+  rpc ChangePasswordPage(ChangePasswordPageRequest) returns(ChangePasswordPageResponse) {
+    option (google.api.http) = {
+      get: "/change-password-page/{token}"
     };
   }
 }
+
+message ChangePasswordPageRequest{
+  string token = 1;
+}
+
 message ForgotPasswordRequest{
   string email = 1;
+}
+
+message ChangePasswordRequest{
+  ChangePasswordBody changePasswordBody =1;
+}
+
+message ChangePasswordBody{
+  string password =1;
+  string confirmPassword=2;
+  string token =3;
+}
+
+message ChangePasswordPageResponse{
+  string token = 1;
 }
 
 message Credentials {

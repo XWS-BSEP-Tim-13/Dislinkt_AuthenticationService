@@ -62,6 +62,17 @@ func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, reques
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, request *pb.ChangePasswordPageRequest) (*pb.ChangePasswordPageResponse, error) {
+	resp, err := handler.service.CheckIfTokenExists(request.Token)
+	if err != nil {
+		return nil, status.Error(400, "Token does not exist!")
+	}
+	response := &pb.ChangePasswordPageResponse{
+		Token: resp.Token,
+	}
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 
 	return nil, nil
