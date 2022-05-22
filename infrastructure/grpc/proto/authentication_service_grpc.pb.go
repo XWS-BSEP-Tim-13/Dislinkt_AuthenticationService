@@ -27,6 +27,7 @@ type AuthenticationServiceClient interface {
 	IsAuthorized(ctx context.Context, in *AuthorizationRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	ForgotPassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	ChangePassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
+	GenerateCode(ctx context.Context, in *GenerateCodeRequest, opts ...grpc.CallOption) (*GenerateCodeResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -82,6 +83,15 @@ func (c *authenticationServiceClient) ChangePassword(ctx context.Context, in *Fo
 	return out, nil
 }
 
+func (c *authenticationServiceClient) GenerateCode(ctx context.Context, in *GenerateCodeRequest, opts ...grpc.CallOption) (*GenerateCodeResponse, error) {
+	out := new(GenerateCodeResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/GenerateCode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -91,6 +101,7 @@ type AuthenticationServiceServer interface {
 	IsAuthorized(context.Context, *AuthorizationRequest) (*AuthorizationResponse, error)
 	ForgotPassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error)
 	ChangePassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error)
+	GenerateCode(context.Context, *GenerateCodeRequest) (*GenerateCodeResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -112,6 +123,9 @@ func (UnimplementedAuthenticationServiceServer) ForgotPassword(context.Context, 
 }
 func (UnimplementedAuthenticationServiceServer) ChangePassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ChangePassword not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) GenerateCode(context.Context, *GenerateCodeRequest) (*GenerateCodeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GenerateCode not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -216,6 +230,24 @@ func _AuthenticationService_ChangePassword_Handler(srv interface{}, ctx context.
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_GenerateCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GenerateCodeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).GenerateCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/GenerateCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).GenerateCode(ctx, req.(*GenerateCodeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -242,6 +274,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ChangePassword",
 			Handler:    _AuthenticationService_ChangePassword_Handler,
+		},
+		{
+			MethodName: "GenerateCode",
+			Handler:    _AuthenticationService_GenerateCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

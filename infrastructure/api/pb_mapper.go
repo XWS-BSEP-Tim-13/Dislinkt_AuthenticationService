@@ -19,6 +19,7 @@ func mapUserToDomain(user *pb.User) *domain.User {
 		Username: (*user).Username,
 		Password: (*user).Password,
 		Role:     (*user).Role,
+		Email:    (*user).Email,
 	}
 	return userDomain
 }

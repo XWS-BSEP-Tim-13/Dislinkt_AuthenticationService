@@ -79,6 +79,21 @@ func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
 	return store
 }
 
+func (server *Server) initPasswordlessStore(client *gorm.DB) domain.UserStore {
+	store, err := persistence.NewAuthenticationPostgresStore(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	store.DeleteAll()
+	for _, User := range users {
+		_, err := store.Create(User)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+	return store
+}
+
 func (server *Server) initMailService() *application.MailService {
 	return application.NewMailServiceService()
 }
