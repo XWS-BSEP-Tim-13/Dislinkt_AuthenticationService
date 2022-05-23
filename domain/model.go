@@ -7,6 +7,7 @@ type User struct {
 	//UserId   string `gorm:"unique"`
 	Username string `gorm:"unique"`
 	Password string
+	IsActive bool
 	Role     string
 	Email    string `gorm:"unique"`
 }

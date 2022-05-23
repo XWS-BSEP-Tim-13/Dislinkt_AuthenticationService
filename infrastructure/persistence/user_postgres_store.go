@@ -27,19 +27,30 @@ func (store *AuthenticationPostgresStore) Create(user *domain.User) (*domain.Use
 		return nil, result.Error
 	}
 	var newUser *domain.User
-	newUser, _ = store.GetById(user.ID)
+	newUser, _ = store.GetActiveByID(user.ID)
 	return newUser, nil
 }
 
-func (store *AuthenticationPostgresStore) GetById(id int) (*domain.User, error) {
+func (store *AuthenticationPostgresStore) GetActiveByID(id int) (*domain.User, error) {
 	var user domain.User
-	result := store.db.Find(&user, id)
+	result := store.db.Where("is_active = true").Find(&user, id)
 
 	if result.RowsAffected > 0 {
 		return &user, nil
 	}
 
 	return &domain.User{}, fmt.Errorf("User with id=%s not found", id)
+}
+
+func (store *AuthenticationPostgresStore) GetActiveByUsername(username string) (*domain.User, error) {
+	var user domain.User
+	result := store.db.Where("username = ?", username).Where("is_active = true").Find(&user)
+
+	if result.RowsAffected > 0 {
+		return &user, nil
+	}
+
+	return &domain.User{}, fmt.Errorf("User with username=%s not found", username)
 }
 
 func (store *AuthenticationPostgresStore) GetByUsername(username string) (*domain.User, error) {
@@ -53,9 +64,9 @@ func (store *AuthenticationPostgresStore) GetByUsername(username string) (*domai
 	return &domain.User{}, fmt.Errorf("User with username=%s not found", username)
 }
 
-func (store *AuthenticationPostgresStore) GetAll() (*[]domain.User, error) {
+func (store *AuthenticationPostgresStore) GetAllActiveAccounts() (*[]domain.User, error) {
 	var users []domain.User
-	result := store.db.Find(&users)
+	result := store.db.Where("is_active = true").Find(&users)
 	if result.Error != nil {
 		return nil, result.Error
 	}
@@ -67,9 +78,9 @@ func (store *AuthenticationPostgresStore) DeleteAll() {
 		Delete(&domain.User{})
 }
 
-func (store *AuthenticationPostgresStore) GetByEmail(email string) (*domain.User, error) {
+func (store *AuthenticationPostgresStore) GetActiveByEmail(email string) (*domain.User, error) {
 	var user domain.User
-	result := store.db.Where("email = ?", email).Find(&user)
+	result := store.db.Where("email = ?", email).Where("is_active = true").Find(&user)
 
 	if result.RowsAffected > 0 {
 		return &user, nil

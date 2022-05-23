@@ -26,7 +26,7 @@ func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPa
 }
 
 func (service *AuthenticationService) Login(credentials *domain.Credentials) (*domain.Token, error) {
-	dbUser, _ := service.store.GetByUsername((*credentials).Username)
+	dbUser, _ := service.store.GetActiveByUsername((*credentials).Username)
 	if (*dbUser).Username == "" {
 		err := errors.New("bad credentials")
 		return nil, err
@@ -66,6 +66,7 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 		return nil, err
 	}
 
+	(*user).IsActive = false
 	newUser, err := service.store.Create(user)
 	return newUser, err
 }
@@ -80,12 +81,8 @@ func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPas
 	return service.tokenStore.Create(&request)
 }
 
-func (service *AuthenticationService) IsAuthorized(token *domain.Token) {
-	//service.store.Create()
-}
-
 func (service *AuthenticationService) GetByEmail(email string) (*domain.User, error) {
-	user, err := service.store.GetByEmail(email)
+	user, err := service.store.GetActiveByEmail(email)
 	if err != nil {
 		return nil, err
 	}
