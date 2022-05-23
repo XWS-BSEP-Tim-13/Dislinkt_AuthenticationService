@@ -106,6 +106,18 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request *pb.PasswordlessLoginRequest) (*pb.Token, error) {
+	credentials := mapCredentialsToDomain(request.Credentials)
+	token, err := handler.service.Login(credentials)
+
+	if err != nil {
+		return nil, status.Error(401, "Bad credentials!")
+	}
+
+	tokenPB := mapTokenToPB(token)
+	return tokenPB, nil
+}
+
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 
 	return nil, nil

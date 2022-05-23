@@ -28,6 +28,7 @@ type AuthenticationServiceClient interface {
 	ForgotPassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	ChangePassword(ctx context.Context, in *ForgotPasswordRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	GenerateCode(ctx context.Context, in *GenerateCodeRequest, opts ...grpc.CallOption) (*GenerateCodeResponse, error)
+	LoginWithCode(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*Token, error)
 }
 
 type authenticationServiceClient struct {
@@ -92,6 +93,15 @@ func (c *authenticationServiceClient) GenerateCode(ctx context.Context, in *Gene
 	return out, nil
 }
 
+func (c *authenticationServiceClient) LoginWithCode(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/LoginWithCode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -102,6 +112,7 @@ type AuthenticationServiceServer interface {
 	ForgotPassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error)
 	ChangePassword(context.Context, *ForgotPasswordRequest) (*AuthorizationResponse, error)
 	GenerateCode(context.Context, *GenerateCodeRequest) (*GenerateCodeResponse, error)
+	LoginWithCode(context.Context, *PasswordlessLoginRequest) (*Token, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -126,6 +137,9 @@ func (UnimplementedAuthenticationServiceServer) ChangePassword(context.Context, 
 }
 func (UnimplementedAuthenticationServiceServer) GenerateCode(context.Context, *GenerateCodeRequest) (*GenerateCodeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GenerateCode not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) LoginWithCode(context.Context, *PasswordlessLoginRequest) (*Token, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LoginWithCode not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -248,6 +262,24 @@ func _AuthenticationService_GenerateCode_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_LoginWithCode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PasswordlessLoginRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).LoginWithCode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/LoginWithCode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).LoginWithCode(ctx, req.(*PasswordlessLoginRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -278,6 +310,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GenerateCode",
 			Handler:    _AuthenticationService_GenerateCode_Handler,
+		},
+		{
+			MethodName: "LoginWithCode",
+			Handler:    _AuthenticationService_LoginWithCode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
