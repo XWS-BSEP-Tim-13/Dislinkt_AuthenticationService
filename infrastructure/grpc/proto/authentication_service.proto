@@ -35,16 +35,12 @@ service AuthenticationService{
 
   rpc ChangePassword(ChangePasswordRequest) returns(AuthorizationResponse) {
     option (google.api.http) = {
-      post: "/change-password"
+      post: "/update-password"
       body: "changePasswordBody"
     };
   }
 
-  rpc ChangePasswordPage(ChangePasswordPageRequest) returns(ChangePasswordPageResponse) {
-    option (google.api.http) = {
-      get: "/change-password-page/{token}"
-    };
-  }
+  rpc ChangePasswordPage(ChangePasswordPageRequest) returns(ChangePasswordPageResponse) {}
 }
 
 message ChangePasswordPageRequest{
