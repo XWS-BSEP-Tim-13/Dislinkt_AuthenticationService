@@ -23,6 +23,15 @@ func mapUserToDomain(user *pb.User) *domain.User {
 	return userDomain
 }
 
+func mapChangePasswordPbToDto(pb *pb.ChangePasswordBody) *domain.ChangePasswordDto {
+	dto := &domain.ChangePasswordDto{
+		Password:        (*pb).Password,
+		ConfirmPassword: (*pb).ConfirmPassword,
+		Token:           (*pb).Token,
+	}
+	return dto
+}
+
 func mapTokenToPB(token *domain.Token) *pb.Token {
 	tokenPb := &pb.Token{
 		Role:     token.Role,

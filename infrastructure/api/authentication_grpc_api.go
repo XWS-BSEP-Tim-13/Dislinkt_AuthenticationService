@@ -6,6 +6,7 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"google.golang.org/grpc/status"
+	"time"
 )
 
 type AuthenticationHandler struct {
@@ -67,9 +68,30 @@ func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, re
 	if err != nil {
 		return nil, status.Error(400, "Token does not exist!")
 	}
+	time := time.Now()
+	if resp.ExpiringDate.After(time) {
+		return nil, status.Error(400, "Token has expired")
+	}
 	response := &pb.ChangePasswordPageResponse{
 		Token: resp.Token,
 	}
+	return response, nil
+}
+
+func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.AuthorizationResponse, error) {
+	resp, err := handler.service.CheckIfTokenExists(request.ChangePasswordBody.Token)
+	if err != nil {
+		return nil, status.Error(400, "Token does not exist!")
+	}
+	time := time.Now()
+	if resp.ExpiringDate.After(time) {
+		return nil, status.Error(400, "Token has expired")
+	}
+	err = handler.service.ChangePassword(mapChangePasswordPbToDto(request.ChangePasswordBody), resp)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.AuthorizationResponse{}
 	return response, nil
 }
 

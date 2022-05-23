@@ -81,6 +81,27 @@ func (service *AuthenticationService) CheckIfTokenExists(token string) (*domain.
 	return service.tokenStore.GetByToken(token)
 }
 
+func (service *AuthenticationService) ChangePassword(dto *domain.ChangePasswordDto, tokenObj *domain.ForgotPasswordToken) error {
+	if dto.Password != dto.ConfirmPassword {
+		err := errors.New("passwords do not match")
+		return err
+	}
+	resp, err := service.store.GetByEmail(tokenObj.Email)
+	if err != nil {
+		return err
+	}
+	resp.Password, err = service.jwtManager.GenerateHashPassword(resp.Password)
+	if err != nil {
+		return err
+	}
+	err = service.store.UpdatePassword(resp)
+	if err != nil {
+		return err
+	}
+	service.tokenStore.Delete(tokenObj.ID)
+	return nil
+}
+
 func (service *AuthenticationService) IsAuthorized(token *domain.Token) {
 	//service.store.Create()
 }

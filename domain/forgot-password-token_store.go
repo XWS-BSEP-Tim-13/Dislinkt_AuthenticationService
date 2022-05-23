@@ -5,4 +5,5 @@ type ForgotPasswordTokenStore interface {
 	GetById(id int) (*ForgotPasswordToken, error)
 	GetByToken(token string) (*ForgotPasswordToken, error)
 	DeleteAll()
+	Delete(id int)
 }

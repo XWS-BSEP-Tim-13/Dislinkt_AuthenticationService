@@ -10,6 +10,13 @@ type ForgotPasswordTokenPostgresStore struct {
 	db *gorm.DB
 }
 
+func (store ForgotPasswordTokenPostgresStore) Delete(id int) {
+	err := store.db.Delete(&domain.ForgotPasswordToken{}, id)
+	if err != nil {
+		fmt.Printf("Error while deleting token")
+	}
+}
+
 func (store ForgotPasswordTokenPostgresStore) DeleteAll() {
 	store.db.Session(&gorm.Session{AllowGlobalUpdate: true}).
 		Delete(&domain.ForgotPasswordToken{})
