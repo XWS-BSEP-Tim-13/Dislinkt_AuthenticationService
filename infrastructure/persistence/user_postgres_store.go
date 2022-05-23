@@ -23,17 +23,29 @@ func NewAuthenticationPostgresStore(db *gorm.DB) (domain.UserStore, error) {
 func (store *AuthenticationPostgresStore) Create(user *domain.User) (*domain.User, error) {
 	result := store.db.Create(user)
 	fmt.Printf("Creating user %d\n", user.ID)
+	fmt.Println("HSJFZSKFSFSSSSSSSSSSSSSSSSSSSSSSSSSSSSS", user)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 	var newUser *domain.User
-	newUser, _ = store.GetActiveByID(user.ID)
+	newUser, _ = store.GetByID(user.ID)
 	return newUser, nil
 }
 
 func (store *AuthenticationPostgresStore) GetActiveByID(id int) (*domain.User, error) {
 	var user domain.User
 	result := store.db.Where("is_active = true").Find(&user, id)
+
+	if result.RowsAffected > 0 {
+		return &user, nil
+	}
+
+	return &domain.User{}, fmt.Errorf("User with id=%s not found", id)
+}
+
+func (store *AuthenticationPostgresStore) GetByID(id int) (*domain.User, error) {
+	var user domain.User
+	result := store.db.Find(&user, id)
 
 	if result.RowsAffected > 0 {
 		return &user, nil

@@ -9,39 +9,38 @@ import (
 var users = []*domain.User{
 	{
 		Username: "stefanljubovic",
-		ID:       1,
 		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
 		IsActive: true,
 		Role:     "USER",
+		Email:    "stefanljubovic@gmail.com",
 	},
 	{
 		Username: "srdjansukovic",
-		ID:       2,
-		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
-		IsActive: true,
-		Role:     "USER",
-	},
-	{
-		Username: "anagavrilovic",
-		ID:       3,
-		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
-		IsActive: true,
-		Role:     "USER",
-	},
-	{
-		Username: "marijakljestan",
-		ID:       4,
-		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
-		IsActive: true,
-		Role:     "USER",
-	},
-	{
-		Username: "lenka",
-		ID:       5,
 		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
 		IsActive: true,
 		Role:     "USER",
 		Email:    "srdjansukovic@gmail.com",
+	},
+	{
+		Username: "anagavrilovic",
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
+		Role:     "USER",
+		Email:    "anagavrilovic@gmail.com",
+	},
+	{
+		Username: "marijakljestan",
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
+		Role:     "USER",
+		Email:    "marijakljestan@gmail.com",
+	},
+	{
+		Username: "lenka",
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
+		Role:     "USER",
+		Email:    "lenka@gmail.com",
 	},
 }
 

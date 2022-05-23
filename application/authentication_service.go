@@ -14,14 +14,17 @@ type AuthenticationService struct {
 	jwtManager        JwtManager
 	tokenStore        domain.ForgotPasswordTokenStore
 	passwordlessStore domain.PasswordlessStore
+	verificationStore domain.VerificationStore
+	mailService       MailService
 }
 
-func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *AuthenticationService {
+func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore) *AuthenticationService {
 	return &AuthenticationService{
 		store:             store,
 		jwtManager:        *NewJwtManager(),
 		tokenStore:        tokenStore,
 		passwordlessStore: passwordlessStore,
+		verificationStore: verificationStore,
 	}
 }
 
@@ -74,6 +77,29 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 
 	(*user).IsActive = false
 	newUser, err := service.store.Create(user)
+	if err != nil {
+		err := errors.New("error in saving user data")
+		return nil, err
+	}
+	fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", newUser)
+
+	/*verificationData, err := service.verificationStore.Create(&domain.VerificationData{
+		Code:      uuid.New().String(),
+		Email:     (*newUser).Email,
+		ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(1)),
+	})
+	if err != nil {
+		err := errors.New("error in saving verification data")
+		return nil, err
+	}
+	fmt.Println(verificationData)
+
+	err = service.mailService.SendVerificationEmail((*user).Email, (*verificationData).Code)
+	if err != nil {
+		err := errors.New("error sending e-mail")
+		return nil, err
+	}*/
+
 	return newUser, err
 }
 

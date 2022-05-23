@@ -29,9 +29,10 @@ func (server *Server) Start() {
 	productStore := server.initProductStore(postgresClient)
 	tokenStore := server.initTokenStore(postgresClient)
 	passwordlessStore := server.initPasswordlessStore(postgresClient)
+	verificationStore := server.initVerificationStore(postgresClient)
 	mailService := server.initMailService()
-	productService := server.initProductService(productStore, tokenStore, passwordlessStore)
-	productHandler := server.initProductHandler(productService, mailService)
+	productService := server.initAuthenticationService(productStore, tokenStore, passwordlessStore, verificationStore)
+	productHandler := server.initAuthenticationHandler(productService, mailService)
 
 	server.startGrpcServer(productHandler)
 }
@@ -88,15 +89,23 @@ func (server *Server) initPasswordlessStore(client *gorm.DB) domain.Passwordless
 	return store
 }
 
+func (server *Server) initVerificationStore(client *gorm.DB) domain.VerificationStore {
+	store, err := persistence.NewVerificationPostgresStore(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return store
+}
+
 func (server *Server) initMailService() *application.MailService {
 	return application.NewMailServiceService()
 }
 
-func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *application.AuthenticationService {
-	return application.NewAuthenticationService(store, tokenStore, passwordlessStore)
+func (server *Server) initAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore) *application.AuthenticationService {
+	return application.NewAuthenticationService(store, tokenStore, passwordlessStore, verificationStore)
 }
 
-func (server *Server) initProductHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {
+func (server *Server) initAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {
 	return api.NewAuthenticationHandler(service, mailService)
 }
 

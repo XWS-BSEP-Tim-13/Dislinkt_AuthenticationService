@@ -1,6 +1,8 @@
 package domain
 
-import "time"
+import (
+	"time"
+)
 
 type User struct {
 	ID       int    `gorm:"primaryKey"`
@@ -23,4 +25,11 @@ type PasswordlessCredentials struct {
 	Email        string `gorm:"unique"`
 	Code         string
 	ExpiringDate time.Time `gorm:"date"`
+}
+
+type VerificationData struct {
+	ID        int    `gorm:"primaryKey"`
+	Code      string `gorm:"primaryKey"`
+	Email     string
+	ExpiresAt time.Time `gorm:"date"`
 }
