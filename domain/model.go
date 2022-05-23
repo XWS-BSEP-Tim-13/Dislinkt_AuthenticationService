@@ -23,4 +23,5 @@ type PasswordlessCredentials struct {
 	Email        string `gorm:"unique"`
 	Code         string
 	ExpiringDate time.Time `gorm:"date"`
+	IsUsed       bool
 }

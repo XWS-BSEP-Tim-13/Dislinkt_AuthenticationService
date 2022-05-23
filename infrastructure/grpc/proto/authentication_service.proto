@@ -47,6 +47,13 @@ service AuthenticationService{
       body: "passwordlessCredentials"
     };
   }
+
+  rpc LoginWithCode(PasswordlessLoginRequest) returns(Token) {
+    option (google.api.http) = {
+      post: "/passwordless-login"
+      body: "passwordless"
+    };
+  }
 }
 message ForgotPasswordRequest{
   string email = 1;
@@ -80,6 +87,11 @@ message PasswordlessCredentialsEmail {
   string email = 1;
 }
 
+message PasswordlessLogin {
+  string email = 1;
+  string code = 2;
+}
+
 message LoginRequest {
   Credentials credentials = 1;
 }
@@ -105,4 +117,8 @@ message GenerateCodeRequest {
 
 message GenerateCodeResponse {
   PasswordlessCredentials passwordlessCredentials = 1;
+}
+
+message PasswordlessLoginRequest {
+  PasswordlessLogin passwordless = 1;
 }

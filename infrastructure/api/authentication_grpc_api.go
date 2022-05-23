@@ -77,7 +77,13 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	}
 
 	fmt.Printf("Creating credentials\n")
-	credentialsDomain := createPasswordlessCredentials(request.PasswordlessCredentials, secureCode)
+
+	hashedCode, hashError := handler.service.HashSecureCode(secureCode)
+	if hashError != nil {
+		return nil, hashError
+	}
+
+	credentialsDomain := createPasswordlessCredentials(request.PasswordlessCredentials, hashedCode)
 	_, createError := handler.service.CreatePasswordlessCredentials(credentialsDomain)
 	if createError != nil {
 		return nil, createError

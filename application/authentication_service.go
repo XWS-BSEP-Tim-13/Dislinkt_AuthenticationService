@@ -112,3 +112,39 @@ func (service *AuthenticationService) GenerateSecureCode(length int) (string, er
 
 	return string(buffer), nil
 }
+
+func (service *AuthenticationService) HashSecureCode(code string) (string, error) {
+	hashed, err := service.jwtManager.GenerateHashPassword(code)
+	return hashed, err
+}
+
+func (service *AuthenticationService) LoginWithCode(credentials *domain.PasswordlessCredentials) (*domain.Token, error) {
+	dbUser, userError := service.GetByEmail(credentials.Email)
+	if userError != nil {
+		return nil, userError
+	}
+
+	dbCredentials, credError := service.passwordlessStore.GetByEmail(credentials.Email)
+	if credError != nil {
+		return nil, credError
+	}
+
+	isCodeCorrect := service.jwtManager.CheckPasswordHash((*credentials).Code, (*dbCredentials).Code)
+	if !isCodeCorrect {
+		err := errors.New("bad code")
+		return nil, err
+	}
+
+	validToken, err := service.jwtManager.GenerateJWT((*dbUser).Username, (*dbUser).Role)
+	if err != nil {
+		err := errors.New("failed to generate token")
+		return nil, err
+	}
+
+	var token domain.Token
+	token.Username = (*dbUser).Username
+	token.Role = (*dbUser).Role
+	token.TokenString = validToken
+
+	return &token, nil
+}

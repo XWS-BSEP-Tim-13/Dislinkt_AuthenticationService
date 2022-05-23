@@ -49,6 +49,7 @@ func createPasswordlessCredentials(passwordless *pb.PasswordlessCredentialsEmail
 		Email:        (*passwordless).Email,
 		Code:         code,
 		ExpiringDate: expires,
+		IsUsed:       false,
 	}
 
 	return credentialsDomain
