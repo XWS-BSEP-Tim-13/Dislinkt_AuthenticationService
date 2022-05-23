@@ -42,7 +42,7 @@ func mapCredentialsToDomain(credentials *pb.Credentials) *domain.Credentials {
 	return credentialsDomain
 }
 
-func createPasswordlessCredentials(passwordless *pb.PasswordlessCredentials, code string) *domain.PasswordlessCredentials {
+func createPasswordlessCredentials(passwordless *pb.PasswordlessCredentialsEmail, code string) *domain.PasswordlessCredentials {
 	expires := time.Now().Local().Add(time.Minute * 15)
 
 	credentialsDomain := &domain.PasswordlessCredentials{
