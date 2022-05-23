@@ -59,6 +59,12 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 		return nil, err
 	}
 
+	dbUser, _ = service.store.GetActiveByEmail((*user).Email)
+	if (*dbUser).Username != "" {
+		err := errors.New("email already exists")
+		return nil, err
+	}
+
 	var err error
 	(*user).Password, err = service.jwtManager.GenerateHashPassword((*user).Password)
 	if err != nil {

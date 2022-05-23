@@ -3,8 +3,7 @@ package domain
 import "time"
 
 type User struct {
-	ID int `gorm:"primaryKey"`
-	//UserId   string `gorm:"unique"`
+	ID       int    `gorm:"primaryKey"`
 	Username string `gorm:"unique"`
 	Password string
 	IsActive bool

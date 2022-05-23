@@ -88,3 +88,14 @@ func (store *AuthenticationPostgresStore) GetActiveByEmail(email string) (*domai
 
 	return &domain.User{}, fmt.Errorf("User with email=%s not found", email)
 }
+
+func (store *AuthenticationPostgresStore) GetByEmail(email string) (*domain.User, error) {
+	var user domain.User
+	result := store.db.Where("email = ?", email).Find(&user)
+
+	if result.RowsAffected > 0 {
+		return &user, nil
+	}
+
+	return &domain.User{}, fmt.Errorf("User with email=%s not found", email)
+}
