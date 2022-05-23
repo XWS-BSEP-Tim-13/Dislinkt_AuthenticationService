@@ -1,7 +1,6 @@
 package application
 
 import (
-	"crypto/rand"
 	"fmt"
 	"net/smtp"
 	"os"
@@ -41,10 +40,12 @@ func (service *MailService) SendForgotPasswordMail(token, email string) {
 	fmt.Println("Email Sent Successfully!")
 }
 
-func (service *MailService) SendPasswordlessCode(email string) {
+func (service *MailService) SendPasswordlessCode(email string, secureCode string) error {
 
 	from := os.Getenv("MAIL_USERNAME")
 	password := os.Getenv("MAIL_PASSWORD")
+
+	fmt.Println("From: ", from)
 
 	to := []string{
 		email,
@@ -52,34 +53,14 @@ func (service *MailService) SendPasswordlessCode(email string) {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	secureCode, _ := GenerateOTP(6)
-
 	body := "Your code is: " + secureCode
 	message := []byte("From: " + from + "\r\n" +
-		email + "\r\n" +
 		"Subject: Six digit code for passwordless login\r\n\r\n" +
 		body + "\r\n")
 	auth := smtp.PlainAuth("", from, password, smtpHost)
 	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
 	if err != nil {
 		fmt.Println(err)
-		return
 	}
-}
-
-const otpChars = "1234567890"
-
-func GenerateOTP(length int) (string, error) {
-	buffer := make([]byte, length)
-	_, err := rand.Read(buffer)
-	if err != nil {
-		return "", err
-	}
-
-	otpCharsLength := len(otpChars)
-	for i := 0; i < length; i++ {
-		buffer[i] = otpChars[int(buffer[i])%otpCharsLength]
-	}
-
-	return string(buffer), nil
+	return err
 }

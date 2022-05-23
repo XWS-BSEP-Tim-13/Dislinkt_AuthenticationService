@@ -6,6 +6,7 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 type AuthenticationHandler struct {
@@ -63,11 +64,39 @@ func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, reques
 }
 
 func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request *pb.GenerateCodeRequest) (*pb.GenerateCodeResponse, error) {
-	fmt.Printf("Sending email\n")
 	email := request.PasswordlessCredentials.GetEmail()
-	
-	handler.mailService.SendPasswordlessCode(email)
-	response := &pb.GenerateCodeResponse{}
+	user, emailErr := handler.service.GetByEmail(email)
+	if emailErr != nil || user == nil {
+		fmt.Println("User does not exist")
+		return nil, emailErr
+	}
+
+	secureCode, codeError := handler.service.GenerateSecureCode(6)
+	if codeError != nil {
+		return nil, codeError
+	}
+
+	fmt.Printf("Creating credentials\n")
+	credentialsDomain := createPasswordlessCredentials(request.PasswordlessCredentials, secureCode)
+	_, createError := handler.service.CreatePasswordlessCredentials(credentialsDomain)
+	if createError != nil {
+		return nil, createError
+	}
+	fmt.Printf("Created credentials\n")
+	fmt.Printf("Sending email\n")
+
+	err := handler.mailService.SendPasswordlessCode(email, secureCode)
+	if err != nil {
+		panic(err)
+	}
+
+	response := &pb.GenerateCodeResponse{
+		PasswordlessCredentials: &pb.PasswordlessCredentials{
+			Code:         secureCode,
+			Email:        email,
+			ExpiringDate: timestamppb.New(credentialsDomain.ExpiringDate),
+		},
+	}
 	return response, nil
 }
 

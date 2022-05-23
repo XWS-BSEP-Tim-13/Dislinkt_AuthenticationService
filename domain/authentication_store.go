@@ -6,4 +6,5 @@ type UserStore interface {
 	GetById(id int) (*User, error)
 	DeleteAll()
 	GetByUsername(username string) (*User, error)
+	GetByEmail(email string) (*User, error)
 }

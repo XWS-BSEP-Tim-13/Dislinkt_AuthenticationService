@@ -1,6 +1,7 @@
 package application
 
 import (
+	"crypto/rand"
 	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
@@ -81,4 +82,33 @@ func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPas
 
 func (service *AuthenticationService) IsAuthorized(token *domain.Token) {
 	//service.store.Create()
+}
+
+func (service *AuthenticationService) GetByEmail(email string) (*domain.User, error) {
+	user, err := service.store.GetByEmail(email)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}
+
+func (service *AuthenticationService) CreatePasswordlessCredentials(credentials *domain.PasswordlessCredentials) (*domain.PasswordlessCredentials, error) {
+	newCredentials, err := service.passwordlessStore.Create(credentials)
+	return newCredentials, err
+}
+
+func (service *AuthenticationService) GenerateSecureCode(length int) (string, error) {
+	otpChars := "1234567890"
+	buffer := make([]byte, length)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	otpCharsLength := len(otpChars)
+	for i := 0; i < length; i++ {
+		buffer[i] = otpChars[int(buffer[i])%otpCharsLength]
+	}
+
+	return string(buffer), nil
 }

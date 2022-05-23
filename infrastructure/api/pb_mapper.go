@@ -3,6 +3,7 @@ package api
 import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
+	"time"
 )
 
 func mapUserToPB(user *domain.User) *pb.User {
@@ -38,5 +39,17 @@ func mapCredentialsToDomain(credentials *pb.Credentials) *domain.Credentials {
 		Username: (*credentials).Username,
 		Password: (*credentials).Password,
 	}
+	return credentialsDomain
+}
+
+func createPasswordlessCredentials(passwordless *pb.PasswordlessCredentials, code string) *domain.PasswordlessCredentials {
+	expires := time.Now().Local().Add(time.Minute * 15)
+
+	credentialsDomain := &domain.PasswordlessCredentials{
+		Email:        (*passwordless).Email,
+		Code:         code,
+		ExpiringDate: expires,
+	}
+
 	return credentialsDomain
 }

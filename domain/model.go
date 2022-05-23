@@ -18,7 +18,7 @@ type ForgotPasswordToken struct {
 	ExpiringDate time.Time `gorm:"date"`
 }
 
-type PasswordlesCredentials struct {
+type PasswordlessCredentials struct {
 	ID           int    `gorm:"primaryKey"`
 	Email        string `gorm:"unique"`
 	Code         string

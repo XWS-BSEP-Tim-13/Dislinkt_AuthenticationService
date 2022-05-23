@@ -66,3 +66,14 @@ func (store *AuthenticationPostgresStore) DeleteAll() {
 	store.db.Session(&gorm.Session{AllowGlobalUpdate: true}).
 		Delete(&domain.User{})
 }
+
+func (store *AuthenticationPostgresStore) GetByEmail(email string) (*domain.User, error) {
+	var user domain.User
+	result := store.db.Where("email = ?", email).Find(&user)
+
+	if result.RowsAffected > 0 {
+		return &user, nil
+	}
+
+	return &domain.User{}, fmt.Errorf("User with email=%s not found", email)
+}
