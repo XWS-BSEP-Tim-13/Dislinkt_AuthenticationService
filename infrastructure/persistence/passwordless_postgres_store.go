@@ -33,11 +33,11 @@ func (store PasswordlessPostgresStore) GetById(id int) (*domain.PasswordlessCred
 }
 
 func (store PasswordlessPostgresStore) GetByEmail(email string) (*domain.PasswordlessCredentials, error) {
-	var passwordless domain.PasswordlessCredentials
-	result := store.db.Find(&passwordless, email)
+	var user domain.PasswordlessCredentials
+	result := store.db.Where("email = ?", email).Find(&user)
 
 	if result.RowsAffected > 0 {
-		return &passwordless, nil
+		return &user, nil
 	}
 
 	return &domain.PasswordlessCredentials{}, fmt.Errorf("User with email=%s not found", email)

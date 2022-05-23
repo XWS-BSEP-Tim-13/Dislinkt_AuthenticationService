@@ -49,8 +49,15 @@ func createPasswordlessCredentials(passwordless *pb.PasswordlessCredentialsEmail
 		Email:        (*passwordless).Email,
 		Code:         code,
 		ExpiringDate: expires,
-		IsUsed:       false,
 	}
 
+	return credentialsDomain
+}
+
+func mapPasswordlessCredentialsToDomain(credentials *pb.PasswordlessLogin) *domain.PasswordlessCredentials {
+	credentialsDomain := &domain.PasswordlessCredentials{
+		Email: (*credentials).Email,
+		Code:  (*credentials).Code,
+	}
 	return credentialsDomain
 }

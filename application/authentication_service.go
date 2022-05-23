@@ -121,22 +121,31 @@ func (service *AuthenticationService) HashSecureCode(code string) (string, error
 func (service *AuthenticationService) LoginWithCode(credentials *domain.PasswordlessCredentials) (*domain.Token, error) {
 	dbUser, userError := service.GetByEmail(credentials.Email)
 	if userError != nil {
+		fmt.Println("no such user")
 		return nil, userError
 	}
 
 	dbCredentials, credError := service.passwordlessStore.GetByEmail(credentials.Email)
 	if credError != nil {
+		fmt.Println("no such user passwordless")
 		return nil, credError
+	}
+
+	if now := time.Now(); dbCredentials.ExpiringDate.Before(now) {
+		err := errors.New("expired code")
+		return nil, err
 	}
 
 	isCodeCorrect := service.jwtManager.CheckPasswordHash((*credentials).Code, (*dbCredentials).Code)
 	if !isCodeCorrect {
+		fmt.Println("bad code")
 		err := errors.New("bad code")
 		return nil, err
 	}
 
 	validToken, err := service.jwtManager.GenerateJWT((*dbUser).Username, (*dbUser).Role)
 	if err != nil {
+		fmt.Println("failed to generate token")
 		err := errors.New("failed to generate token")
 		return nil, err
 	}
