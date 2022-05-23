@@ -9,16 +9,18 @@ import (
 )
 
 type AuthenticationService struct {
-	store      domain.UserStore
-	jwtManager JwtManager
-	tokenStore domain.ForgotPasswordTokenStore
+	store             domain.UserStore
+	jwtManager        JwtManager
+	tokenStore        domain.ForgotPasswordTokenStore
+	passwordlessStore domain.PasswordlessStore
 }
 
-func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore) *AuthenticationService {
+func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *AuthenticationService {
 	return &AuthenticationService{
-		store:      store,
-		jwtManager: *NewJwtManager(),
-		tokenStore: tokenStore,
+		store:             store,
+		jwtManager:        *NewJwtManager(),
+		tokenStore:        tokenStore,
+		passwordlessStore: passwordlessStore,
 	}
 }
 

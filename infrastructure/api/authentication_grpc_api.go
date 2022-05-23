@@ -62,6 +62,15 @@ func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, reques
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request *pb.GenerateCodeRequest) (*pb.GenerateCodeResponse, error) {
+	email := request.PasswordlessCredentials.GetEmail()
+
+	fmt.Printf("Sending email\n")
+	handler.mailService.SendPasswordlessCode(email)
+	response := &pb.GenerateCodeResponse{}
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 
 	return nil, nil

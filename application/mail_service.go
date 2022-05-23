@@ -1,6 +1,7 @@
 package application
 
 import (
+	"crypto/rand"
 	"fmt"
 	"net/smtp"
 	"os"
@@ -50,7 +51,10 @@ func (service *MailService) SendPasswordlessCode(email string) {
 	}
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
-	body := "Your code is: "
+
+	secureCode, _ := GenerateOTP(6)
+
+	body := "Your code is: " + secureCode
 	message := []byte("From: " + from + "\r\n" +
 		email + "\r\n" +
 		"Subject: Six digit code for passwordless login\r\n\r\n" +
@@ -61,4 +65,21 @@ func (service *MailService) SendPasswordlessCode(email string) {
 		fmt.Println(err)
 		return
 	}
+}
+
+const otpChars = "1234567890"
+
+func GenerateOTP(length int) (string, error) {
+	buffer := make([]byte, length)
+	_, err := rand.Read(buffer)
+	if err != nil {
+		return "", err
+	}
+
+	otpCharsLength := len(otpChars)
+	for i := 0; i < length; i++ {
+		buffer[i] = otpChars[int(buffer[i])%otpCharsLength]
+	}
+
+	return string(buffer), nil
 }
