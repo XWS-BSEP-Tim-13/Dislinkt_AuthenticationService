@@ -6,11 +6,11 @@ import (
 
 type User struct {
 	ID       int    `gorm:"primaryKey"`
-	Username string `gorm:"unique"`
+	Username string `gorm:"unique" validate:"required,username"`
 	Password string
 	IsActive bool
 	Role     string
-	Email    string `gorm:"unique"`
+	Email    string `gorm:"unique" validate:"required,email"`
 }
 
 type ForgotPasswordToken struct {

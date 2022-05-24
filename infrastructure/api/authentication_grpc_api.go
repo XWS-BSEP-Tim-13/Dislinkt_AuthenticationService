@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
@@ -13,12 +14,14 @@ type AuthenticationHandler struct {
 	pb.UnimplementedAuthenticationServiceServer
 	service     *application.AuthenticationService
 	mailService *application.MailService
+	goValidator *util.GoValidator
 }
 
-func NewAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService) *AuthenticationHandler {
+func NewAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService, goValidator *util.GoValidator) *AuthenticationHandler {
 	return &AuthenticationHandler{
 		service:     service,
 		mailService: mailService,
+		goValidator: goValidator,
 	}
 }
 
@@ -37,7 +40,12 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	fmt.Println((*request).User)
 	user := mapUserToDomain(request.User)
-	fmt.Println(user)
+
+	err := handler.goValidator.Validator.Struct(user)
+	if err != nil {
+		return nil, status.Error(500, err.Error())
+	}
+
 	newUser, err := handler.service.Register(user)
 	if err != nil {
 		return nil, status.Error(400, err.Error())
