@@ -30,6 +30,7 @@ type PasswordlessCredentials struct {
 type VerificationData struct {
 	ID        int    `gorm:"primaryKey"`
 	Code      string `gorm:"primaryKey"`
+	CodeUsed  bool
 	Email     string
 	ExpiresAt time.Time `gorm:"date"`
 }

@@ -31,7 +31,7 @@ func (server *Server) Start() {
 	passwordlessStore := server.initPasswordlessStore(postgresClient)
 	verificationStore := server.initVerificationStore(postgresClient)
 	mailService := server.initMailService()
-	productService := server.initAuthenticationService(productStore, tokenStore, passwordlessStore, verificationStore)
+	productService := server.initAuthenticationService(productStore, tokenStore, passwordlessStore, verificationStore, mailService)
 	productHandler := server.initAuthenticationHandler(productService, mailService)
 
 	server.startGrpcServer(productHandler)
@@ -101,8 +101,8 @@ func (server *Server) initMailService() *application.MailService {
 	return application.NewMailServiceService()
 }
 
-func (server *Server) initAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore) *application.AuthenticationService {
-	return application.NewAuthenticationService(store, tokenStore, passwordlessStore, verificationStore)
+func (server *Server) initAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore, mailService *application.MailService) *application.AuthenticationService {
+	return application.NewAuthenticationService(store, tokenStore, passwordlessStore, verificationStore, mailService)
 }
 
 func (server *Server) initAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {

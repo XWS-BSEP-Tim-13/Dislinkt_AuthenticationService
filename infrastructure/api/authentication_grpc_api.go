@@ -40,7 +40,7 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 	fmt.Println(user)
 	newUser, err := handler.service.Register(user)
 	if err != nil {
-		return nil, status.Error(400, "Username already exists!")
+		return nil, status.Error(400, err.Error())
 	}
 
 	response := &pb.RegisterResponse{

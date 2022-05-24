@@ -27,7 +27,7 @@ func (store VerificationPostgresStore) Create(data *domain.VerificationData) (*d
 	}
 
 	var newData *domain.VerificationData
-	newData, _ = store.GetById(newData.ID)
+	newData, _ = store.GetById(data.ID)
 	return newData, nil
 }
 

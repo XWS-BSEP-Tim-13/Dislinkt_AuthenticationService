@@ -15,16 +15,17 @@ type AuthenticationService struct {
 	tokenStore        domain.ForgotPasswordTokenStore
 	passwordlessStore domain.PasswordlessStore
 	verificationStore domain.VerificationStore
-	mailService       MailService
+	mailService       *MailService
 }
 
-func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore) *AuthenticationService {
+func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore, mailService *MailService) *AuthenticationService {
 	return &AuthenticationService{
 		store:             store,
 		jwtManager:        *NewJwtManager(),
 		tokenStore:        tokenStore,
 		passwordlessStore: passwordlessStore,
 		verificationStore: verificationStore,
+		mailService:       mailService,
 	}
 }
 
@@ -62,7 +63,7 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 		return nil, err
 	}
 
-	dbUser, _ = service.store.GetActiveByEmail((*user).Email)
+	dbUser, _ = service.store.GetByEmail((*user).Email)
 	if (*dbUser).Username != "" {
 		err := errors.New("email already exists")
 		return nil, err
@@ -77,28 +78,28 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 
 	(*user).IsActive = false
 	newUser, err := service.store.Create(user)
+
 	if err != nil {
 		err := errors.New("error in saving user data")
 		return nil, err
 	}
-	fmt.Println("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", newUser)
 
-	/*verificationData, err := service.verificationStore.Create(&domain.VerificationData{
+	verificationData, err := service.verificationStore.Create(&domain.VerificationData{
 		Code:      uuid.New().String(),
 		Email:     (*newUser).Email,
 		ExpiresAt: time.Now().Local().Add(time.Hour * time.Duration(1)),
+		CodeUsed:  false,
 	})
 	if err != nil {
 		err := errors.New("error in saving verification data")
 		return nil, err
 	}
-	fmt.Println(verificationData)
 
-	err = service.mailService.SendVerificationEmail((*user).Email, (*verificationData).Code)
+	err = service.mailService.SendVerificationEmail((*verificationData).Email, (*verificationData).Code)
 	if err != nil {
 		err := errors.New("error sending e-mail")
 		return nil, err
-	}*/
+	}
 
 	return newUser, err
 }
