@@ -8,7 +8,7 @@ type User struct {
 	Username string `gorm:"unique"`
 	Password string
 	Role     string
-	Email    string `gorm:"unique"`
+	Email    string `gorm:"unique,"`
 }
 
 type ForgotPasswordToken struct {

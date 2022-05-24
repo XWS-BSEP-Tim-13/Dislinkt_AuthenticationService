@@ -6,6 +6,7 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"google.golang.org/grpc/status"
+	"gopkg.in/go-playground/validator.v9"
 	"time"
 )
 
@@ -50,26 +51,35 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 }
 
 func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, request *pb.ForgotPasswordRequest) (*pb.AuthorizationResponse, error) {
+	validate := validator.New()
+	err := validate.Var(request.Email, "required,email")
+	if err != nil {
+		return nil, status.Error(400, "Wrong email format!")
+	}
 	email := request.Email
+
 	resp, err := handler.service.SaveToken(email)
 	fmt.Printf("Api token,%s\n", resp.Token)
 	if err != nil {
-		fmt.Println("Api error")
 		return nil, err
 	}
-	fmt.Printf("Sending email\n")
 	handler.mailService.SendForgotPasswordMail(resp.Token, email)
 	response := &pb.AuthorizationResponse{}
 	return response, nil
 }
 
 func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, request *pb.ChangePasswordPageRequest) (*pb.ChangePasswordPageResponse, error) {
+	validate := validator.New()
+	err := validate.Var(request.Token, "required")
+	if err != nil {
+		return nil, status.Error(400, "Token is required!")
+	}
 	resp, err := handler.service.CheckIfTokenExists(request.Token)
 	if err != nil {
 		return nil, status.Error(400, "Token does not exist!")
 	}
 	time := time.Now()
-	if resp.ExpiringDate.After(time) {
+	if resp.ExpiringDate.Before(time) {
 		return nil, status.Error(400, "Token has expired")
 	}
 	response := &pb.ChangePasswordPageResponse{
@@ -79,15 +89,22 @@ func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, re
 }
 
 func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.AuthorizationResponse, error) {
+	dto := mapChangePasswordPbToDto(request.ChangePasswordBody)
+
+	validate := validator.New()
+	err := validate.Struct(dto)
+	if err != nil {
+		return nil, status.Error(400, "Wrong input fields!")
+	}
 	resp, err := handler.service.CheckIfTokenExists(request.ChangePasswordBody.Token)
 	if err != nil {
 		return nil, status.Error(400, "Token does not exist!")
 	}
 	time := time.Now()
-	if resp.ExpiringDate.After(time) {
+	if resp.ExpiringDate.Before(time) {
 		return nil, status.Error(400, "Token has expired")
 	}
-	err = handler.service.ChangePassword(mapChangePasswordPbToDto(request.ChangePasswordBody), resp)
+	err = handler.service.ChangePassword(dto, resp)
 	if err != nil {
 		return nil, err
 	}

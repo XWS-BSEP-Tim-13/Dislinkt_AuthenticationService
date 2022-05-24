@@ -82,6 +82,7 @@ func (service *AuthenticationService) CheckIfTokenExists(token string) (*domain.
 }
 
 func (service *AuthenticationService) ChangePassword(dto *domain.ChangePasswordDto, tokenObj *domain.ForgotPasswordToken) error {
+	fmt.Printf("Changing password%s, %s \n", dto.Password, dto.ConfirmPassword)
 	if dto.Password != dto.ConfirmPassword {
 		err := errors.New("passwords do not match")
 		return err
@@ -90,12 +91,15 @@ func (service *AuthenticationService) ChangePassword(dto *domain.ChangePasswordD
 	if err != nil {
 		return err
 	}
+	fmt.Printf("By email: %s\n", resp.Username)
 	resp.Password, err = service.jwtManager.GenerateHashPassword(resp.Password)
 	if err != nil {
+		fmt.Printf("Error while generating password! \n")
 		return err
 	}
 	err = service.store.UpdatePassword(resp)
 	if err != nil {
+		fmt.Printf("Error while changing password! \n")
 		return err
 	}
 	service.tokenStore.Delete(tokenObj.ID)
