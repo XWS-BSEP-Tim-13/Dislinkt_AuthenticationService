@@ -35,7 +35,7 @@ service AuthenticationService{
 
   rpc ChangePassword(ChangePasswordRequest) returns(AuthorizationResponse) {
     option (google.api.http) = {
-      post: "/update-password"
+      put: "/change-password"
       body: "changePasswordBody"
     };
   }

@@ -303,14 +303,14 @@ func RegisterAuthenticationServiceHandlerServer(ctx context.Context, mux *runtim
 
 	})
 
-	mux.Handle("POST", pattern_AuthenticationService_ChangePassword_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_AuthenticationService_ChangePassword_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		var stream runtime.ServerTransportStream
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/post.AuthenticationService/ChangePassword", runtime.WithHTTPPathPattern("/update-password"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/post.AuthenticationService/ChangePassword", runtime.WithHTTPPathPattern("/change-password"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -452,12 +452,12 @@ func RegisterAuthenticationServiceHandlerClient(ctx context.Context, mux *runtim
 
 	})
 
-	mux.Handle("POST", pattern_AuthenticationService_ChangePassword_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+	mux.Handle("PUT", pattern_AuthenticationService_ChangePassword_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/post.AuthenticationService/ChangePassword", runtime.WithHTTPPathPattern("/update-password"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/post.AuthenticationService/ChangePassword", runtime.WithHTTPPathPattern("/change-password"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -485,7 +485,7 @@ var (
 
 	pattern_AuthenticationService_ForgotPassword_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"forgot-password"}, ""))
 
-	pattern_AuthenticationService_ChangePassword_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"update-password"}, ""))
+	pattern_AuthenticationService_ChangePassword_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0}, []string{"change-password"}, ""))
 )
 
 var (
