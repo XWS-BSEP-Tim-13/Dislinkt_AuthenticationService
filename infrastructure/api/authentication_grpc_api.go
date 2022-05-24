@@ -6,6 +6,7 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/timestamppb"
 	"gopkg.in/go-playground/validator.v9"
 	"time"
 )
@@ -90,7 +91,6 @@ func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, re
 
 func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.AuthorizationResponse, error) {
 	dto := mapChangePasswordPbToDto(request.ChangePasswordBody)
-
 	validate := validator.New()
 	err := validate.Struct(dto)
 	if err != nil {
@@ -110,6 +110,61 @@ func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, reques
 	}
 	response := &pb.AuthorizationResponse{}
 	return response, nil
+}
+
+func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request *pb.GenerateCodeRequest) (*pb.GenerateCodeResponse, error) {
+	email := request.PasswordlessCredentials.GetEmail()
+	user, emailErr := handler.service.GetByEmail(email)
+	if emailErr != nil || user == nil {
+		fmt.Println("User does not exist")
+		return nil, emailErr
+	}
+
+	secureCode, codeError := handler.service.GenerateSecureCode(6)
+	if codeError != nil {
+		return nil, codeError
+	}
+
+	fmt.Printf("Creating credentials\n")
+
+	hashedCode, hashError := handler.service.HashSecureCode(secureCode)
+	if hashError != nil {
+		return nil, hashError
+	}
+
+	credentialsDomain := createPasswordlessCredentials(request.PasswordlessCredentials, hashedCode)
+	_, createError := handler.service.CreatePasswordlessCredentials(credentialsDomain)
+	if createError != nil {
+		return nil, createError
+	}
+	fmt.Printf("Created credentials\n")
+	fmt.Printf("Sending email\n")
+
+	err := handler.mailService.SendPasswordlessCode(email, secureCode)
+	if err != nil {
+		panic(err)
+	}
+
+	response := &pb.GenerateCodeResponse{
+		PasswordlessCredentials: &pb.PasswordlessCredentials{
+			Code:         secureCode,
+			Email:        email,
+			ExpiringDate: timestamppb.New(credentialsDomain.ExpiringDate),
+		},
+	}
+	return response, nil
+}
+
+func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request *pb.PasswordlessLoginRequest) (*pb.Token, error) {
+	credentials := mapPasswordlessCredentialsToDomain(request.Passwordless)
+	token, err := handler.service.LoginWithCode(credentials)
+
+	if err != nil {
+		return nil, err
+	}
+
+	tokenPB := mapTokenToPB(token)
+	return tokenPB, nil
 }
 
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {

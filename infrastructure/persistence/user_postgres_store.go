@@ -52,17 +52,6 @@ func (store *AuthenticationPostgresStore) GetByUsername(username string) (*domai
 	return &domain.User{}, fmt.Errorf("User with username=%s not found", username)
 }
 
-func (store *AuthenticationPostgresStore) GetByEmail(email string) (*domain.User, error) {
-	var user domain.User
-	result := store.db.Where("email = ?", email).Find(&user)
-
-	if result.RowsAffected > 0 {
-		return &user, nil
-	}
-
-	return &domain.User{}, fmt.Errorf("user with email=%s not found", email)
-}
-
 func (store *AuthenticationPostgresStore) UpdatePassword(user *domain.User) error {
 	if err := store.db.Model(&user).Where("id = ?", user.ID).Update("password", user.Password).Error; err != nil {
 		return fmt.Errorf("failed to update password")
@@ -82,4 +71,15 @@ func (store *AuthenticationPostgresStore) GetAll() (*[]domain.User, error) {
 func (store *AuthenticationPostgresStore) DeleteAll() {
 	store.db.Session(&gorm.Session{AllowGlobalUpdate: true}).
 		Delete(&domain.User{})
+}
+
+func (store *AuthenticationPostgresStore) GetByEmail(email string) (*domain.User, error) {
+	var user domain.User
+	result := store.db.Where("email = ?", email).Find(&user)
+
+	if result.RowsAffected > 0 {
+		return &user, nil
+	}
+
+	return &domain.User{}, fmt.Errorf("User with email=%s not found", email)
 }

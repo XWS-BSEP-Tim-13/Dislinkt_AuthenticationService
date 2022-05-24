@@ -28,8 +28,9 @@ func (server *Server) Start() {
 	postgresClient := server.initPostgresClient()
 	productStore := server.initProductStore(postgresClient)
 	tokenStore := server.initTokenStore(postgresClient)
+	passwordlessStore := server.initPasswordlessStore(postgresClient)
 	mailService := server.initMailService()
-	productService := server.initProductService(productStore, tokenStore)
+	productService := server.initProductService(productStore, tokenStore, passwordlessStore)
 	productHandler := server.initProductHandler(productService, mailService)
 
 	server.startGrpcServer(productHandler)
@@ -79,12 +80,20 @@ func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
 	return store
 }
 
+func (server *Server) initPasswordlessStore(client *gorm.DB) domain.PasswordlessStore {
+	store, err := persistence.NewPasswordlessPostgresStore(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return store
+}
+
 func (server *Server) initMailService() *application.MailService {
 	return application.NewMailServiceService()
 }
 
-func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore) *application.AuthenticationService {
-	return application.NewAuthenticationService(store, tokenStore)
+func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *application.AuthenticationService {
+	return application.NewAuthenticationService(store, tokenStore, passwordlessStore)
 }
 
 func (server *Server) initProductHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {

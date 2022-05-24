@@ -39,3 +39,28 @@ func (service *MailService) SendForgotPasswordMail(token, email string) {
 	}
 	fmt.Println("Email Sent Successfully!")
 }
+
+func (service *MailService) SendPasswordlessCode(email string, secureCode string) error {
+
+	from := os.Getenv("MAIL_USERNAME")
+	password := os.Getenv("MAIL_PASSWORD")
+
+	fmt.Println("From: ", from)
+
+	to := []string{
+		email,
+	}
+	smtpHost := "smtp.gmail.com"
+	smtpPort := "587"
+
+	body := "Your code is: " + secureCode
+	message := []byte("From: " + from + "\r\n" +
+		"Subject: Six digit code for passwordless login\r\n\r\n" +
+		body + "\r\n")
+	auth := smtp.PlainAuth("", from, password, smtpHost)
+	err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+	if err != nil {
+		fmt.Println(err)
+	}
+	return err
+}

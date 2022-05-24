@@ -5,6 +5,7 @@ option go_package = "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/i
 package post;
 
 import "google/api/annotations.proto";
+import "google/protobuf/timestamp.proto";
 
 service AuthenticationService{
   rpc Login(LoginRequest) returns(Token) {
@@ -41,6 +42,20 @@ service AuthenticationService{
   }
 
   rpc ChangePasswordPage(ChangePasswordPageRequest) returns(ChangePasswordPageResponse) {}
+
+  rpc GenerateCode(GenerateCodeRequest) returns(GenerateCodeResponse) {
+    option (google.api.http) = {
+      post: "/generate-code"
+      body: "passwordlessCredentials"
+    };
+  }
+
+  rpc LoginWithCode(PasswordlessLoginRequest) returns(Token) {
+    option (google.api.http) = {
+      post: "/passwordless-login"
+      body: "passwordless"
+    };
+  }
 }
 
 message ChangePasswordPageRequest{
@@ -74,12 +89,28 @@ message User {
   string username = 1;
   string password = 2;
   string role = 3;
+  string email = 4;
 }
 
 message Token {
   string role        = 1;
   string username    = 2;
   string token = 3;
+}
+
+message PasswordlessCredentials {
+  string email = 1;
+  string code = 2;
+  google.protobuf.Timestamp expiringDate = 3;
+}
+
+message PasswordlessCredentialsEmail {
+  string email = 1;
+}
+
+message PasswordlessLogin {
+  string email = 1;
+  string code = 2;
 }
 
 message LoginRequest {
@@ -101,4 +132,14 @@ message AuthorizationRequest {
 message AuthorizationResponse {
 }
 
+message GenerateCodeRequest {
+  PasswordlessCredentialsEmail passwordlessCredentials = 1;
+}
 
+message GenerateCodeResponse {
+  PasswordlessCredentials passwordlessCredentials = 1;
+}
+
+message PasswordlessLoginRequest {
+  PasswordlessLogin passwordless = 1;
+}
