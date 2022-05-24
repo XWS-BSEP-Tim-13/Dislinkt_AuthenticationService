@@ -14,6 +14,13 @@ var users = []*domain.User{
 		Role:     "USER",
 		Email:    "srdjansukovic@gmail.com",
 	},
+	{
+		Username: "stefanljubovic1",
+		ID:       2,
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		Role:     "USER",
+		Email:    "bademailtest",
+	},
 }
 
 var tokens = []*domain.ForgotPasswordToken{

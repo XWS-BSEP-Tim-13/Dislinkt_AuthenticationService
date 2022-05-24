@@ -2,8 +2,10 @@ package api
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/api/validation"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -67,6 +69,7 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	email := request.PasswordlessCredentials.GetEmail()
 	user, emailErr := handler.service.GetByEmail(email)
 	if emailErr != nil || user == nil {
+		emailErr = errors.New("user does not exist")
 		fmt.Println("User does not exist")
 		return nil, emailErr
 	}
@@ -74,6 +77,12 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	secureCode, codeError := handler.service.GenerateSecureCode(6)
 	if codeError != nil {
 		return nil, codeError
+	}
+
+	codeValidationError := validation.ValidateCode(secureCode)
+	if codeValidationError != nil {
+		validation.PrintValidationErrors(codeValidationError)
+		return nil, codeValidationError
 	}
 
 	fmt.Printf("Creating credentials\n")
@@ -84,6 +93,14 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	}
 
 	credentialsDomain := createPasswordlessCredentials(request.PasswordlessCredentials, hashedCode)
+	fmt.Println(credentialsDomain)
+
+	validationError := validation.ValidatePasswordlessCredentials(credentialsDomain)
+	if validationError != nil {
+		validation.PrintValidationErrors(validationError)
+		return nil, validationError
+	}
+
 	_, createError := handler.service.CreatePasswordlessCredentials(credentialsDomain)
 	if createError != nil {
 		return nil, createError
@@ -108,6 +125,12 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 
 func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request *pb.PasswordlessLoginRequest) (*pb.Token, error) {
 	credentials := mapPasswordlessCredentialsToDomain(request.Passwordless)
+	validationError := validation.ValidatePasswordlessCredentials(credentials)
+	if validationError != nil {
+		validation.PrintValidationErrors(validationError)
+		return nil, validationError
+	}
+
 	token, err := handler.service.LoginWithCode(credentials)
 
 	if err != nil {
