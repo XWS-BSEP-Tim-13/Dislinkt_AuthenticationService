@@ -101,7 +101,63 @@ func (service *AuthenticationService) Register(user *domain.User) (*domain.User,
 		return nil, err
 	}
 
-	return newUser, err
+	return newUser, nil
+}
+
+func (service *AuthenticationService) ActivateAccount(code string) (*domain.ActivatedAccount, error) {
+
+	verificationData, err := service.verificationStore.GetByCode(code)
+	if err != nil {
+		err := errors.New("error reading verification data")
+		return nil, err
+	}
+
+	user, err := service.store.GetByEmail(verificationData.Email)
+	if err != nil {
+		err := errors.New("error reading user data")
+		return nil, err
+	}
+
+	if verificationData.CodeUsed == true {
+		activatedAccount := &domain.ActivatedAccount{
+			Message:  "Activation code already used!",
+			Role:     user.Role,
+			Email:    user.Email,
+			Username: user.Username,
+		}
+		return activatedAccount, nil
+	}
+
+	if verificationData.ExpiresAt.Before(time.Now()) {
+		activatedAccount := &domain.ActivatedAccount{
+			Message:  "Activation email expired!",
+			Role:     user.Role,
+			Email:    user.Email,
+			Username: user.Username,
+		}
+		return activatedAccount, nil
+	}
+
+	err = service.store.UpdateIsActive(user)
+	if err != nil {
+		err := errors.New("error activating account")
+		return nil, err
+	}
+
+	err = service.verificationStore.UpdateUsedData(verificationData)
+	if err != nil {
+		err := errors.New("error updating verification data")
+		return nil, err
+	}
+
+	activatedAccount := &domain.ActivatedAccount{
+		Message:  "Account successfully activated!",
+		Role:     user.Role,
+		Email:    user.Email,
+		Username: user.Username,
+	}
+
+	return activatedAccount, nil
 }
 
 func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPasswordToken, error) {

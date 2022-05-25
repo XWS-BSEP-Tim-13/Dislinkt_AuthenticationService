@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	"gorm.io/gorm"
@@ -20,7 +21,7 @@ func NewVerificationPostgresStore(db *gorm.DB) (domain.VerificationStore, error)
 	}, nil
 }
 
-func (store VerificationPostgresStore) Create(data *domain.VerificationData) (*domain.VerificationData, error) {
+func (store *VerificationPostgresStore) Create(data *domain.VerificationData) (*domain.VerificationData, error) {
 	result := store.db.Create(data)
 	if result.Error != nil {
 		return nil, result.Error
@@ -31,7 +32,7 @@ func (store VerificationPostgresStore) Create(data *domain.VerificationData) (*d
 	return newData, nil
 }
 
-func (store VerificationPostgresStore) GetById(id int) (*domain.VerificationData, error) {
+func (store *VerificationPostgresStore) GetById(id int) (*domain.VerificationData, error) {
 	var data domain.VerificationData
 	result := store.db.Find(&data, id)
 
@@ -42,7 +43,7 @@ func (store VerificationPostgresStore) GetById(id int) (*domain.VerificationData
 	return &domain.VerificationData{}, fmt.Errorf("data with id=%s not found", id)
 }
 
-func (store VerificationPostgresStore) GetByCode(code string) (*domain.VerificationData, error) {
+func (store *VerificationPostgresStore) GetByCode(code string) (*domain.VerificationData, error) {
 	var data domain.VerificationData
 	result := store.db.Where("code = ?", code).Find(&data)
 
@@ -51,4 +52,20 @@ func (store VerificationPostgresStore) GetByCode(code string) (*domain.Verificat
 	}
 
 	return &domain.VerificationData{}, fmt.Errorf("data with code=%s not found", code)
+}
+
+func (store *VerificationPostgresStore) UpdateUsedData(verificationData *domain.VerificationData) error {
+	tx := store.db.Model(&domain.VerificationData{}).
+		Where("id = ?", verificationData.ID).
+		Update("code_used", true)
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	if tx.RowsAffected != 1 {
+		return errors.New("update error")
+	}
+
+	return nil
 }

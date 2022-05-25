@@ -10,3 +10,10 @@ type Token struct {
 	Username    string `json:"email"`
 	TokenString string `json:"token"`
 }
+
+type ActivatedAccount struct {
+	Message  string `json:"message"`
+	Role     string `json:"role"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}

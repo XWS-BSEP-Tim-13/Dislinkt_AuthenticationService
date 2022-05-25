@@ -9,4 +9,5 @@ type UserStore interface {
 	GetByUsername(username string) (*User, error)
 	GetActiveByEmail(email string) (*User, error)
 	GetByEmail(email string) (*User, error)
+	UpdateIsActive(user *User) error
 }

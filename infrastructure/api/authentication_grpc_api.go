@@ -57,6 +57,26 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, request *pb.ActivateAccountRequest) (*pb.ActivateAccountResponse, error) {
+	code := request.Code
+
+	activatedAccount, err := handler.service.ActivateAccount(code)
+	if err != nil {
+		return nil, status.Error(500, err.Error())
+	}
+
+	response := &pb.ActivateAccountResponse{
+		ActivatedAccount: &pb.ActivatedAccount{
+			Message:  activatedAccount.Message,
+			Role:     activatedAccount.Role,
+			Username: activatedAccount.Username,
+			Email:    activatedAccount.Email,
+		},
+	}
+
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, request *pb.ForgotPasswordRequest) (*pb.AuthorizationResponse, error) {
 	email := request.Email
 	resp, err := handler.service.SaveToken(email)

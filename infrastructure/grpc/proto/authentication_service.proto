@@ -47,6 +47,10 @@ service AuthenticationService{
       body: "passwordlessCredentials"
     };
   }
+
+  rpc ActivateAccount(ActivateAccountRequest) returns(ActivateAccountResponse) {
+
+  }
 }
 message ForgotPasswordRequest{
   string email = 1;
@@ -105,4 +109,19 @@ message GenerateCodeRequest {
 
 message GenerateCodeResponse {
   PasswordlessCredentials passwordlessCredentials = 1;
+}
+
+message ActivateAccountRequest {
+  string code = 1;
+}
+
+message ActivateAccountResponse {
+  ActivatedAccount activatedAccount = 1;
+}
+
+message ActivatedAccount {
+  string message = 1;
+  string role = 2;
+  string username = 3;
+  string email = 4;
 }

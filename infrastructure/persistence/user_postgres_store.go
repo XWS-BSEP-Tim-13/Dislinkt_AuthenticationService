@@ -1,6 +1,7 @@
 package persistence
 
 import (
+	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	"gorm.io/gorm"
@@ -109,4 +110,20 @@ func (store *AuthenticationPostgresStore) GetByEmail(email string) (*domain.User
 	}
 
 	return &domain.User{}, fmt.Errorf("User with email=%s not found", email)
+}
+
+func (store *AuthenticationPostgresStore) UpdateIsActive(user *domain.User) error {
+	tx := store.db.Model(&domain.User{}).
+		Where("id = ?", user.ID).
+		Update("is_active", true)
+
+	if tx.Error != nil {
+		return tx.Error
+	}
+
+	if tx.RowsAffected != 1 {
+		return errors.New("update error")
+	}
+
+	return nil
 }
