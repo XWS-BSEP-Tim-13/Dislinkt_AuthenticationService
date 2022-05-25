@@ -28,18 +28,21 @@ func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPa
 func (service *AuthenticationService) Login(credentials *domain.Credentials) (*domain.Token, error) {
 	dbUser, _ := service.store.GetByUsername((*credentials).Username)
 	if (*dbUser).Username == "" {
+		fmt.Println("Mail erorrr")
 		err := errors.New("bad credentials")
 		return nil, err
 	}
 
 	isPasswordCorrect := service.jwtManager.CheckPasswordHash((*credentials).Password, (*dbUser).Password)
 	if !isPasswordCorrect {
+		fmt.Println("Hash erorrr")
 		err := errors.New("bad credentials")
 		return nil, err
 	}
 
 	validToken, err := service.jwtManager.GenerateJWT((*dbUser).Username, (*dbUser).Role)
 	if err != nil {
+		fmt.Println("Jwt erorrr")
 		err := errors.New("failed to generate token")
 		return nil, err
 	}
@@ -48,7 +51,7 @@ func (service *AuthenticationService) Login(credentials *domain.Credentials) (*d
 	token.Username = (*dbUser).Username
 	token.Role = (*dbUser).Role
 	token.TokenString = validToken
-
+	fmt.Println("Passed")
 	return &token, nil
 }
 
@@ -76,7 +79,6 @@ func (service *AuthenticationService) SaveToken(email string) (*domain.ForgotPas
 		Token:        uuid.New().String(),
 		ExpiringDate: time.Now().Local().Add(time.Hour * time.Duration(4)),
 	}
-	fmt.Printf("Token created,%s\n", request.Token)
 	return service.tokenStore.Create(&request)
 }
 
@@ -95,7 +97,7 @@ func (service *AuthenticationService) ChangePassword(dto *domain.ChangePasswordD
 		return err
 	}
 	fmt.Printf("By email: %s\n", resp.Username)
-	resp.Password, err = service.jwtManager.GenerateHashPassword(resp.Password)
+	resp.Password, err = service.jwtManager.GenerateHashPassword(dto.Password)
 	if err != nil {
 		fmt.Printf("Error while generating password! \n")
 		return err

@@ -13,7 +13,7 @@ type ForgotPasswordTokenPostgresStore struct {
 func (store ForgotPasswordTokenPostgresStore) Delete(id int) {
 	err := store.db.Delete(&domain.ForgotPasswordToken{}, id)
 	if err != nil {
-		fmt.Printf("Error while deleting token")
+		fmt.Printf("Error while deleting token\n")
 	}
 }
 
@@ -26,7 +26,6 @@ func NewForgotPasswordTokenPostgresStore(db *gorm.DB) (domain.ForgotPasswordToke
 	db.Migrator().DropTable(&domain.ForgotPasswordToken{})
 	err := db.AutoMigrate(&domain.ForgotPasswordToken{})
 	if err != nil {
-		fmt.Printf("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAa\n")
 		return nil, err
 	}
 	return &ForgotPasswordTokenPostgresStore{
@@ -38,12 +37,12 @@ func (store ForgotPasswordTokenPostgresStore) Create(token *domain.ForgotPasswor
 	result := store.db.Create(token)
 	fmt.Printf("Creating token %s\n", token.Token)
 	if result.Error != nil {
-		fmt.Printf("Error while creating")
+		fmt.Printf("Error while creating\n")
 		return nil, result.Error
 	}
 	newToken, err := store.GetById(token.ID)
 	if err != nil {
-		fmt.Printf("Error while creating")
+		fmt.Printf("Error with get by id\n")
 		return nil, result.Error
 	}
 	return newToken, nil

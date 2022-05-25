@@ -19,6 +19,7 @@ func NewJwtManager() *JwtManager {
 
 func (manager *JwtManager) GenerateHashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	fmt.Printf("%s, %s\n", password, bytes)
 	return string(bytes), err
 }
 

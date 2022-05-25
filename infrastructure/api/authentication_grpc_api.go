@@ -25,6 +25,7 @@ func NewAuthenticationHandler(service *application.AuthenticationService, mailSe
 }
 
 func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.LoginRequest) (*pb.Token, error) {
+	fmt.Printf("Login request started %s, %s\n", request.Credentials.Username, request.Credentials.Password)
 	credentials := mapCredentialsToDomain(request.Credentials)
 	token, err := handler.service.Login(credentials)
 
@@ -52,6 +53,7 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 }
 
 func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, request *pb.ForgotPasswordRequest) (*pb.AuthorizationResponse, error) {
+	fmt.Printf("Email : %s\n", request.Email)
 	validate := validator.New()
 	err := validate.Var(request.Email, "required,email")
 	if err != nil {

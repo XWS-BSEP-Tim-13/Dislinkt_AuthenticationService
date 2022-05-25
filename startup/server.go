@@ -50,18 +50,14 @@ func (server *Server) initTokenStore(client *gorm.DB) domain.ForgotPasswordToken
 	store, err := persistence.NewForgotPasswordTokenPostgresStore(client)
 	store.DeleteAll()
 	if err != nil {
-		fmt.Println("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
 		log.Fatal(err)
 	}
-	//token, _ := store.GetById(1)
-	//fmt.Printf("Tokennnnn%s\n", token.Token)
-	for _, Token := range tokens {
-		_, err := store.Create(Token)
-		if err != nil {
-			fmt.Println("FATAAAAALLLLLLLLLLLLLLLLLLLLLLLLLL")
-			log.Fatal(err)
-		}
-	}
+	//for _, Token := range tokens {
+	//	_, err := store.Create(Token)
+	//	if err != nil {
+	//		log.Fatal(err)
+	//	}
+	//}
 	return store
 }
 
