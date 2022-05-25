@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/go-playground/validator/v10 v10.11.0
 	github.com/google/uuid v1.1.2
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
