@@ -29,7 +29,7 @@ func (service *MailService) SendForgotPasswordMail(token, email string) {
 	smtpHost := "smtp.gmail.com"
 	smtpPort := "587"
 
-	body := "To recover email click here: http://localhost:8083/" + token
+	body := "To recover email click here: https://localhost:8083/" + token
 	message := []byte("From: " + from + "\r\n" +
 		email + "\r\n" +
 		"Subject: Recover password\r\n\r\n" +
