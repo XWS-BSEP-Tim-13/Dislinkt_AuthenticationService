@@ -12,7 +12,7 @@ type Token struct {
 }
 
 type ChangePasswordDto struct {
-	Password        string `json:"password" validator:"required,regexp= /^(?=.*\d)(?=.*[a-z])(?=.*[!@#$%^&*])(?=.*[A-Z])[0-9a-zA-Z!@#$%^&*]{8,}$/"`
+	Password        string `json:"password" validator:"required,password"`
 	ConfirmPassword string `json:"confirmPassword" validator:"required"`
 	Token           string `json:"token" validator:"required"`
 }
