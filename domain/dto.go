@@ -16,3 +16,10 @@ type ChangePasswordDto struct {
 	ConfirmPassword string `json:"confirmPassword" validator:"required"`
 	Token           string `json:"token" validator:"required"`
 }
+
+type ActivatedAccount struct {
+	Message  string `json:"message"`
+	Role     string `json:"role"`
+	Username string `json:"username"`
+	Email    string `json:"email"`
+}

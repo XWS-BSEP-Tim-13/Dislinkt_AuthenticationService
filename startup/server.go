@@ -8,6 +8,7 @@ import (
 	auth "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/persistence"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/startup/config"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"log"
@@ -29,9 +30,11 @@ func (server *Server) Start() {
 	productStore := server.initProductStore(postgresClient)
 	tokenStore := server.initTokenStore(postgresClient)
 	passwordlessStore := server.initPasswordlessStore(postgresClient)
+	verificationStore := server.initVerificationStore(postgresClient)
 	mailService := server.initMailService()
-	productService := server.initProductService(productStore, tokenStore, passwordlessStore)
-	productHandler := server.initProductHandler(productService, mailService)
+	goValidator := server.initGoValidator()
+	productService := server.initAuthenticationService(productStore, tokenStore, passwordlessStore, verificationStore, mailService)
+	productHandler := server.initAuthenticationHandler(productService, mailService, goValidator)
 
 	server.startGrpcServer(productHandler)
 }
@@ -52,12 +55,23 @@ func (server *Server) initTokenStore(client *gorm.DB) domain.ForgotPasswordToken
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	//for _, Token := range tokens {
 	//	_, err := store.Create(Token)
 	//	if err != nil {
 	//		log.Fatal(err)
 	//	}
 	//}
+
+	//token, _ := store.GetById(1)
+	//fmt.Printf("Tokennnnn%s\n", token.Token)
+	for _, Token := range tokens {
+		_, err := store.Create(Token)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
+
 	return store
 }
 
@@ -84,16 +98,28 @@ func (server *Server) initPasswordlessStore(client *gorm.DB) domain.Passwordless
 	return store
 }
 
+func (server *Server) initVerificationStore(client *gorm.DB) domain.VerificationStore {
+	store, err := persistence.NewVerificationPostgresStore(client)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return store
+}
+
 func (server *Server) initMailService() *application.MailService {
 	return application.NewMailServiceService()
 }
 
-func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *application.AuthenticationService {
-	return application.NewAuthenticationService(store, tokenStore, passwordlessStore)
+func (server *Server) initGoValidator() *util.GoValidator {
+	return util.NewGoValidator()
 }
 
-func (server *Server) initProductHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {
-	return api.NewAuthenticationHandler(service, mailService)
+func (server *Server) initAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore, mailService *application.MailService) *application.AuthenticationService {
+	return application.NewAuthenticationService(store, tokenStore, passwordlessStore, verificationStore, mailService)
+}
+
+func (server *Server) initAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService, goValidator *util.GoValidator) *api.AuthenticationHandler {
+	return api.NewAuthenticationHandler(service, mailService, goValidator)
 }
 
 func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationHandler) {

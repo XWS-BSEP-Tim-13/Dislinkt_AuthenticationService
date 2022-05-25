@@ -50,12 +50,15 @@ service AuthenticationService{
     };
   }
 
+
   rpc LoginWithCode(PasswordlessLoginRequest) returns(Token) {
     option (google.api.http) = {
       post: "/passwordless-login"
       body: "passwordless"
     };
   }
+
+  rpc ActivateAccount(ActivateAccountRequest) returns(ActivateAccountResponse) {}
 }
 
 message ChangePasswordPageRequest{
@@ -140,6 +143,22 @@ message GenerateCodeResponse {
   PasswordlessCredentials passwordlessCredentials = 1;
 }
 
+
 message PasswordlessLoginRequest {
   PasswordlessLogin passwordless = 1;
+}
+
+message ActivateAccountRequest {
+  string code = 1;
+}
+
+message ActivateAccountResponse {
+  ActivatedAccount activatedAccount = 1;
+}
+
+message ActivatedAccount {
+  string message = 1;
+  string role = 2;
+  string username = 3;
+  string email = 4;
 }

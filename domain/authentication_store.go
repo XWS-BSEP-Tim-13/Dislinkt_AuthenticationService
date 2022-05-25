@@ -2,10 +2,13 @@ package domain
 
 type UserStore interface {
 	Create(user *User) (*User, error)
-	GetAll() (*[]User, error)
-	GetById(id int) (*User, error)
+	GetAllActiveAccounts() (*[]User, error)
+	GetActiveByID(id int) (*User, error)
 	DeleteAll()
+	GetActiveByUsername(username string) (*User, error)
 	GetByUsername(username string) (*User, error)
+	GetActiveByEmail(email string) (*User, error)
 	GetByEmail(email string) (*User, error)
 	UpdatePassword(user *User) error
+	UpdateIsActive(user *User) error
 }
