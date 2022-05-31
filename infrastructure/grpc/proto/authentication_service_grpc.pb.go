@@ -30,6 +30,7 @@ type AuthenticationServiceClient interface {
 	ChangePasswordPage(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*ChangePasswordPageResponse, error)
 	GenerateCode(ctx context.Context, in *GenerateCodeRequest, opts ...grpc.CallOption) (*GenerateCodeResponse, error)
 	LoginWithCode(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*Token, error)
+	SendApiToken(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -112,6 +113,15 @@ func (c *authenticationServiceClient) LoginWithCode(ctx context.Context, in *Pas
 	return out, nil
 }
 
+func (c *authenticationServiceClient) SendApiToken(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error) {
+	out := new(AuthorizationResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/SendApiToken", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -124,6 +134,7 @@ type AuthenticationServiceServer interface {
 	ChangePasswordPage(context.Context, *ChangePasswordPageRequest) (*ChangePasswordPageResponse, error)
 	GenerateCode(context.Context, *GenerateCodeRequest) (*GenerateCodeResponse, error)
 	LoginWithCode(context.Context, *PasswordlessLoginRequest) (*Token, error)
+	SendApiToken(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -154,6 +165,9 @@ func (UnimplementedAuthenticationServiceServer) GenerateCode(context.Context, *G
 }
 func (UnimplementedAuthenticationServiceServer) LoginWithCode(context.Context, *PasswordlessLoginRequest) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method LoginWithCode not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) SendApiToken(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendApiToken not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -312,6 +326,24 @@ func _AuthenticationService_LoginWithCode_Handler(srv interface{}, ctx context.C
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_SendApiToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AuthorizationResponse)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).SendApiToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/SendApiToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).SendApiToken(ctx, req.(*AuthorizationResponse))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -350,6 +382,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "LoginWithCode",
 			Handler:    _AuthenticationService_LoginWithCode_Handler,
+		},
+		{
+			MethodName: "SendApiToken",
+			Handler:    _AuthenticationService_SendApiToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -26,7 +26,6 @@ func (service *MailService) SendForgotPasswordMail(token, email string) {
 	smtpPort := "587"
 	body := "To recover email click here: https://localhost:8083/change-password/" + token
 	message := []byte("From: " + os.Getenv("MAIL_USERNAME") + "\r\n" +
-		email + "\r\n" +
 		"Subject: Recover password\r\n\r\n" +
 		body + "\r\n")
 	//message := []byte("This is a test email message.")

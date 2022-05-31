@@ -30,12 +30,16 @@ func (server *Server) Start() {
 	tokenStore := server.initTokenStore(postgresClient)
 	passwordlessStore := server.initPasswordlessStore(postgresClient)
 	mailService := server.initMailService()
-	productService := server.initProductService(productStore, tokenStore, passwordlessStore)
+	activemqService := server.initActiveMqService()
+	productService := server.initProductService(productStore, tokenStore, passwordlessStore, activemqService)
 	productHandler := server.initProductHandler(productService, mailService)
 
 	server.startGrpcServer(productHandler)
 }
 
+func (server *Server) initActiveMqService() application.ActiveMQ {
+	return *application.NewActiveMQ("")
+}
 func (server *Server) initPostgresClient() *gorm.DB {
 	client, err := persistence.GetClient(
 		server.config.AuthDBHost, server.config.AuthDBUser,
@@ -88,8 +92,8 @@ func (server *Server) initMailService() *application.MailService {
 	return application.NewMailServiceService()
 }
 
-func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *application.AuthenticationService {
-	return application.NewAuthenticationService(store, tokenStore, passwordlessStore)
+func (server *Server) initProductService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, activemqService application.ActiveMQ) *application.AuthenticationService {
+	return application.NewAuthenticationService(store, tokenStore, passwordlessStore, activemqService)
 }
 
 func (server *Server) initProductHandler(service *application.AuthenticationService, mailService *application.MailService) *api.AuthenticationHandler {

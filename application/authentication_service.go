@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
+
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	"github.com/google/uuid"
 	"time"
@@ -14,14 +15,16 @@ type AuthenticationService struct {
 	jwtManager        JwtManager
 	tokenStore        domain.ForgotPasswordTokenStore
 	passwordlessStore domain.PasswordlessStore
+	activemqService   ActiveMQ
 }
 
-func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore) *AuthenticationService {
+func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, activemqService ActiveMQ) *AuthenticationService {
 	return &AuthenticationService{
 		store:             store,
 		jwtManager:        *NewJwtManager(),
 		tokenStore:        tokenStore,
 		passwordlessStore: passwordlessStore,
+		activemqService:   activemqService,
 	}
 }
 
@@ -148,7 +151,19 @@ func (service *AuthenticationService) HashSecureCode(code string) (string, error
 	hashed, err := service.jwtManager.GenerateHashPassword(code)
 	return hashed, err
 }
+func (service *AuthenticationService) SendApiToken(username string) error {
+	user, err := service.store.GetByUsername(username)
+	if err != nil {
+		return errors.New("user not found")
+	}
 
+	token, err := service.jwtManager.GenerateJWT(user.Username, user.Role)
+	if err != nil {
+		return errors.New("error while creating token")
+	}
+	service.activemqService.Send(token)
+	return nil
+}
 func (service *AuthenticationService) LoginWithCode(credentials *domain.PasswordlessCredentials) (*domain.Token, error) {
 	dbUser, userError := service.GetByEmail(credentials.Email)
 	if userError != nil {

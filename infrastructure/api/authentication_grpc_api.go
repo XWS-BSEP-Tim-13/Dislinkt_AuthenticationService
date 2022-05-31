@@ -191,6 +191,15 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 	tokenPB := mapTokenToPB(token)
 	return tokenPB, nil
 }
+func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
+	jwt
+	err := handler.service.SendApiToken(username)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.AuthorizationResponse{}
+	return response, nil
+}
 
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 

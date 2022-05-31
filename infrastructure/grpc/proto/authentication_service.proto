@@ -56,6 +56,12 @@ service AuthenticationService{
       body: "passwordless"
     };
   }
+
+  rpc SendApiToken(AuthorizationResponse) returns(AuthorizationResponse) {
+    option (google.api.http) = {
+      get: "/send-token"
+    };
+  }
 }
 
 message ChangePasswordPageRequest{
