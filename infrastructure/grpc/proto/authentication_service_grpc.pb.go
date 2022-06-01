@@ -31,6 +31,7 @@ type AuthenticationServiceClient interface {
 	GenerateCode(ctx context.Context, in *GenerateCodeRequest, opts ...grpc.CallOption) (*GenerateCodeResponse, error)
 	LoginWithCode(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*Token, error)
 	SendApiToken(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error)
+	ActivateAccount(ctx context.Context, in *ActivateAccountRequest, opts ...grpc.CallOption) (*ActivateAccountResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -122,6 +123,15 @@ func (c *authenticationServiceClient) SendApiToken(ctx context.Context, in *Auth
 	return out, nil
 }
 
+func (c *authenticationServiceClient) ActivateAccount(ctx context.Context, in *ActivateAccountRequest, opts ...grpc.CallOption) (*ActivateAccountResponse, error) {
+	out := new(ActivateAccountResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/ActivateAccount", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -135,6 +145,7 @@ type AuthenticationServiceServer interface {
 	GenerateCode(context.Context, *GenerateCodeRequest) (*GenerateCodeResponse, error)
 	LoginWithCode(context.Context, *PasswordlessLoginRequest) (*Token, error)
 	SendApiToken(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error)
+	ActivateAccount(context.Context, *ActivateAccountRequest) (*ActivateAccountResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -168,6 +179,9 @@ func (UnimplementedAuthenticationServiceServer) LoginWithCode(context.Context, *
 }
 func (UnimplementedAuthenticationServiceServer) SendApiToken(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method SendApiToken not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) ActivateAccount(context.Context, *ActivateAccountRequest) (*ActivateAccountResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ActivateAccount not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -344,6 +358,24 @@ func _AuthenticationService_SendApiToken_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_ActivateAccount_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ActivateAccountRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).ActivateAccount(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/ActivateAccount",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).ActivateAccount(ctx, req.(*ActivateAccountRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -386,6 +418,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "SendApiToken",
 			Handler:    _AuthenticationService_SendApiToken_Handler,
+		},
+		{
+			MethodName: "ActivateAccount",
+			Handler:    _AuthenticationService_ActivateAccount_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

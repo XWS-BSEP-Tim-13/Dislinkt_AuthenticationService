@@ -7,6 +7,8 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/application"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/api/validation"
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/jwt"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"gopkg.in/go-playground/validator.v9"
@@ -17,12 +19,14 @@ type AuthenticationHandler struct {
 	pb.UnimplementedAuthenticationServiceServer
 	service     *application.AuthenticationService
 	mailService *application.MailService
+	goValidator *util.GoValidator
 }
 
-func NewAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService) *AuthenticationHandler {
+func NewAuthenticationHandler(service *application.AuthenticationService, mailService *application.MailService, goValidator *util.GoValidator) *AuthenticationHandler {
 	return &AuthenticationHandler{
 		service:     service,
 		mailService: mailService,
+		goValidator: goValidator,
 	}
 }
 
@@ -42,15 +46,40 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
 	fmt.Println((*request).User)
 	user := mapUserToDomain(request.User)
-	fmt.Println(user)
+
+	err := handler.goValidator.Validator.Struct(user)
+	if err != nil {
+		return nil, status.Error(500, err.Error())
+	}
+
 	newUser, err := handler.service.Register(user)
 	if err != nil {
-		return nil, status.Error(400, "Username already exists!")
+		return nil, status.Error(400, err.Error())
 	}
 
 	response := &pb.RegisterResponse{
 		Username: newUser.Username,
 	}
+	return response, nil
+}
+
+func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, request *pb.ActivateAccountRequest) (*pb.ActivateAccountResponse, error) {
+	code := request.Code
+
+	activatedAccount, err := handler.service.ActivateAccount(code)
+	if err != nil {
+		return nil, status.Error(500, err.Error())
+	}
+
+	response := &pb.ActivateAccountResponse{
+		ActivatedAccount: &pb.ActivatedAccount{
+			Message:  activatedAccount.Message,
+			Role:     activatedAccount.Role,
+			Username: activatedAccount.Username,
+			Email:    activatedAccount.Email,
+		},
+	}
+
 	return response, nil
 }
 
@@ -192,8 +221,11 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 	return tokenPB, nil
 }
 func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
-	jwt
-	err := handler.service.SendApiToken(username)
+	username, err := jwt.ExtractUsernameFromToken(ctx)
+	if err != nil {
+		return nil, status.Error(400, "Wrong username in token!")
+	}
+	err = handler.service.SendApiToken(username)
 	if err != nil {
 		return nil, err
 	}

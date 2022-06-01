@@ -7,6 +7,7 @@ require (
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-stomp/stomp v2.1.4+incompatible
 	github.com/google/uuid v1.1.2
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.0
 	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	google.golang.org/genproto v0.0.0-20220317150908-0efb43f6373e

@@ -5,12 +5,12 @@ import (
 )
 
 type User struct {
-	ID int `gorm:"primaryKey"`
-	//UserId   string `gorm:"unique"`
-	Username string `gorm:"unique"`
+	ID       int    `gorm:"primaryKey"`
+	Username string `gorm:"unique" validate:"required,username"`
 	Password string
+	IsActive bool
 	Role     string
-	Email    string `gorm:"unique"`
+	Email    string `gorm:"unique" validate:"required,email"`
 }
 
 type ForgotPasswordToken struct {
@@ -25,4 +25,12 @@ type PasswordlessCredentials struct {
 	Email        string `gorm:"unique" validate:"email"`
 	Code         string
 	ExpiringDate time.Time `gorm:"date"`
+}
+
+type VerificationData struct {
+	ID        int    `gorm:"primaryKey"`
+	Code      string `gorm:"primaryKey"`
+	CodeUsed  bool
+	Email     string
+	ExpiresAt time.Time `gorm:"date"`
 }

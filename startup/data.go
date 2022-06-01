@@ -9,17 +9,38 @@ import (
 var users = []*domain.User{
 	{
 		Username: "stefanljubovic",
-		ID:       1,
 		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
+		Role:     "USER",
+		Email:    "stefanljubovic@gmail.com",
+	},
+	{
+		Username: "srdjansukovic",
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
 		Role:     "USER",
 		Email:    "ljubovicstefan@gmail.com",
 	},
 	{
-		Username: "stefanljubovic1",
-		ID:       2,
+		Username: "anagavrilovic",
 		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
 		Role:     "USER",
-		Email:    "bademailtest",
+		Email:    "anagavrilovic@gmail.com",
+	},
+	{
+		Username: "marijakljestan",
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
+		Role:     "USER",
+		Email:    "marijakljestan@gmail.com",
+	},
+	{
+		Username: "lenka",
+		Password: "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive: true,
+		Role:     "USER",
+		Email:    "lenka@gmail.com",
 	},
 }
 
