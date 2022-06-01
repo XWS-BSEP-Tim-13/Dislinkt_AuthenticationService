@@ -248,6 +248,7 @@ func (service *AuthenticationService) SendApiToken(username string) error {
 	}
 
 	token, err := service.jwtManager.GenerateJWT(user.Username, user.Role)
+	fmt.Printf("Token generated %s\n", token)
 	if err != nil {
 		return errors.New("error while creating token")
 	}

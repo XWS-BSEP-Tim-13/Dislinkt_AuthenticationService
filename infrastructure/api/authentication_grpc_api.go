@@ -222,6 +222,7 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 }
 func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
 	username, err := jwt.ExtractUsernameFromToken(ctx)
+	fmt.Printf("Sending token started %s\n", username)
 	if err != nil {
 		return nil, status.Error(400, "Wrong username in token!")
 	}

@@ -1,6 +1,8 @@
 package application
 
 import (
+	"errors"
+	"fmt"
 	stomp "github.com/go-stomp/stomp"
 )
 
@@ -25,8 +27,10 @@ func (service *ActiveMQ) Connect() (*stomp.Conn, error) {
 func (service *ActiveMQ) Send(token string) error {
 	conn, err := service.Connect()
 	if err != nil {
-		return err
+		fmt.Printf("Unable to connect  to activemq\n")
+		return errors.New("unable to connect  to activemq")
 	}
+	fmt.Printf("Connected to activemq\n")
 	defer conn.Disconnect()
 	return conn.Send(
 		TOPIC,         // destination
