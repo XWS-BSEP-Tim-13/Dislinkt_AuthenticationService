@@ -3,7 +3,7 @@ package application
 import (
 	"errors"
 	"fmt"
-	stomp "github.com/go-stomp/stomp"
+	"github.com/go-stomp/stomp"
 )
 
 type ActiveMQ struct {
@@ -14,20 +14,22 @@ const TOPIC = "jwt.topic"
 
 func NewActiveMQ(addr string) *ActiveMQ {
 	if addr == "" {
-		addr = "localhost:61616"
+		addr = "activemq:61616"
 	}
 	return &ActiveMQ{addr}
 }
 
 func (service *ActiveMQ) Connect() (*stomp.Conn, error) {
-	return stomp.Dial("tcp", service.Addr)
+	fmt.Printf("Address %s\n", service.Addr)
+	return stomp.Dial("tcp", "localhost:61613")
 }
 
 // Send msg to destination
 func (service *ActiveMQ) Send(token string) error {
 	conn, err := service.Connect()
 	if err != nil {
-		fmt.Printf("Unable to connect  to activemq\n")
+		fmt.Printf("Unable to connect to activemq\n")
+		fmt.Printf("%s\n", err)
 		return errors.New("unable to connect  to activemq")
 	}
 	fmt.Printf("Connected to activemq\n")
