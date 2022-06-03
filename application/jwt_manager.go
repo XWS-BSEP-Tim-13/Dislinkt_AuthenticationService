@@ -42,6 +42,25 @@ func (manager *JwtManager) GenerateJWT(username, role string) (string, error) {
 	return tokenString, nil
 }
 
+func (manager *JwtManager) GenerateJWTWithEmail(email, role string) (string, error) {
+	var mySigningKey = []byte(manager.secretKey)
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+
+	claims["authorized"] = true
+	claims["email"] = email
+	claims["role"] = role
+	claims["exp"] = time.Now().Add(time.Minute * 30).Unix()
+
+	tokenString, err := token.SignedString(mySigningKey)
+
+	if err != nil {
+		fmt.Errorf("something Went Wrong: %s", err.Error())
+		return "", err
+	}
+	return tokenString, nil
+}
+
 func (manager *JwtManager) CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
