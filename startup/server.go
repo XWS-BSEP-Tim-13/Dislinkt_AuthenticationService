@@ -41,7 +41,7 @@ func (server *Server) Start() {
 }
 
 func (server *Server) initActiveMqService() application.ActiveMQ {
-	return *application.NewActiveMQ("")
+	return *application.NewActiveMQ()
 }
 func (server *Server) initPostgresClient() *gorm.DB {
 	client, err := persistence.GetClient(

@@ -12,10 +12,8 @@ type ActiveMQ struct {
 
 const TOPIC = "jwt.topic"
 
-func NewActiveMQ(addr string) *ActiveMQ {
-	if addr == "" {
-		addr = "activemq:61616"
-	}
+func NewActiveMQ() *ActiveMQ {
+	addr := "activemq:61616"
 	return &ActiveMQ{addr}
 }
 
