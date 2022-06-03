@@ -14,14 +14,14 @@ const TOPIC = "jwt.topic"
 
 func NewActiveMQ(addr string) *ActiveMQ {
 	if addr == "" {
-		addr = "activemq:61616"
+		addr = "activemq:61613"
 	}
 	return &ActiveMQ{addr}
 }
 
 func (service *ActiveMQ) Connect() (*stomp.Conn, error) {
 	fmt.Printf("Address %s\n", service.Addr)
-	return stomp.Dial("tcp", "localhost:61613")
+	return stomp.Dial("tcp", "activemq:61613")
 }
 
 // Send msg to destination
