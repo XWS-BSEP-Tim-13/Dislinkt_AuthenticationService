@@ -234,6 +234,14 @@ func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request 
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) CheckIfUserExist(ctx context.Context, request *pb.CheckIfUserExistsRequest) (*pb.CheckIfUserExistsResponse, error) {
+	resp := handler.service.CheckIfUserExists(request.Username)
+	response := &pb.CheckIfUserExistsResponse{
+		Exists: resp,
+	}
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) IsAuthorized(ctx context.Context, request *pb.AuthorizationRequest) (*pb.AuthorizationResponse, error) {
 
 	return nil, nil

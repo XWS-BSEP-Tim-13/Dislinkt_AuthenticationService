@@ -51,6 +51,8 @@ service AuthenticationService{
   }
 
 
+
+
   rpc LoginWithCode(PasswordlessLoginRequest) returns(Token) {
     option (google.api.http) = {
       post: "/passwordless-login"
@@ -65,6 +67,15 @@ service AuthenticationService{
   }
   rpc ActivateAccount(ActivateAccountRequest) returns(ActivateAccountResponse) {}
 
+  rpc CheckIfUserExist(CheckIfUserExistsRequest)returns(CheckIfUserExistsResponse){}
+}
+
+message CheckIfUserExistsRequest{
+  string username =1;
+}
+
+message CheckIfUserExistsResponse{
+  bool exists =1;
 }
 
 message ChangePasswordPageRequest{

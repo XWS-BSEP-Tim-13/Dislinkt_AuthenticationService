@@ -253,6 +253,27 @@ func (service *AuthenticationService) SendApiToken(username string) error {
 	service.activemqService.Send(token)
 	return nil
 }
+
+func (service *AuthenticationService) CheckIfUserExists(email string) bool {
+	_, err := service.store.GetByEmail(email)
+	if err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (service *AuthenticationService) ReceiveJobOffer() {
+	service.activemqService.Subscribe("jobOffer.queue", DecodeBody)
+}
+
+func DecodeBody(err error, body string) {
+	if err != nil {
+		return
+	}
+
+}
+
 func (service *AuthenticationService) LoginWithCode(credentials *domain.PasswordlessCredentials) (*domain.Token, error) {
 	dbUser, userError := service.GetByEmail(credentials.Email)
 	if userError != nil {

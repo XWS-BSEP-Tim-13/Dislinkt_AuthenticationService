@@ -32,6 +32,7 @@ type AuthenticationServiceClient interface {
 	LoginWithCode(ctx context.Context, in *PasswordlessLoginRequest, opts ...grpc.CallOption) (*Token, error)
 	SendApiToken(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	ActivateAccount(ctx context.Context, in *ActivateAccountRequest, opts ...grpc.CallOption) (*ActivateAccountResponse, error)
+	CheckIfUserExist(ctx context.Context, in *CheckIfUserExistsRequest, opts ...grpc.CallOption) (*CheckIfUserExistsResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -132,6 +133,15 @@ func (c *authenticationServiceClient) ActivateAccount(ctx context.Context, in *A
 	return out, nil
 }
 
+func (c *authenticationServiceClient) CheckIfUserExist(ctx context.Context, in *CheckIfUserExistsRequest, opts ...grpc.CallOption) (*CheckIfUserExistsResponse, error) {
+	out := new(CheckIfUserExistsResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/CheckIfUserExist", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -146,6 +156,7 @@ type AuthenticationServiceServer interface {
 	LoginWithCode(context.Context, *PasswordlessLoginRequest) (*Token, error)
 	SendApiToken(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error)
 	ActivateAccount(context.Context, *ActivateAccountRequest) (*ActivateAccountResponse, error)
+	CheckIfUserExist(context.Context, *CheckIfUserExistsRequest) (*CheckIfUserExistsResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -182,6 +193,9 @@ func (UnimplementedAuthenticationServiceServer) SendApiToken(context.Context, *A
 }
 func (UnimplementedAuthenticationServiceServer) ActivateAccount(context.Context, *ActivateAccountRequest) (*ActivateAccountResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ActivateAccount not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) CheckIfUserExist(context.Context, *CheckIfUserExistsRequest) (*CheckIfUserExistsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckIfUserExist not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -376,6 +390,24 @@ func _AuthenticationService_ActivateAccount_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_CheckIfUserExist_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CheckIfUserExistsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).CheckIfUserExist(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/CheckIfUserExist",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).CheckIfUserExist(ctx, req.(*CheckIfUserExistsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -422,6 +454,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ActivateAccount",
 			Handler:    _AuthenticationService_ActivateAccount_Handler,
+		},
+		{
+			MethodName: "CheckIfUserExist",
+			Handler:    _AuthenticationService_CheckIfUserExist_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
