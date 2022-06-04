@@ -4,7 +4,6 @@ import (
 	"crypto/rand"
 	"errors"
 	"fmt"
-
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	"github.com/google/uuid"
 	"time"
@@ -246,8 +245,7 @@ func (service *AuthenticationService) SendApiToken(username string) error {
 	if err != nil {
 		return errors.New("user not found")
 	}
-
-	token, err := service.jwtManager.GenerateJWT(user.Email, user.Role)
+	token, err := service.jwtManager.GenerateJWTWithEmail(user.Email, user.Role)
 	fmt.Printf("Token generated %s\n", token)
 	if err != nil {
 		return errors.New("error while creating token")
