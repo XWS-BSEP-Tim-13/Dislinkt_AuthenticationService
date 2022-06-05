@@ -11,4 +11,5 @@ func main() {
 	server := startup.NewServer(config)
 	fmt.Println("Server is starting...")
 	server.Start()
+
 }

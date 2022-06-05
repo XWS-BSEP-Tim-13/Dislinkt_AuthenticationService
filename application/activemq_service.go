@@ -56,7 +56,9 @@ func (service *ActiveMQ) Subscribe(destination string, handler func(err error, m
 	defer sub.Unsubscribe()
 	for {
 		m := <-sub.C
-		handler(m.Err, string(m.Body))
+		if string(m.Body) != "" {
+			handler(m.Err, string(m.Body))
+		}
 	}
 	return err
 }
