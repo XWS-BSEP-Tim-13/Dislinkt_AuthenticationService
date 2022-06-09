@@ -236,6 +236,7 @@ func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request 
 
 func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context.Context, request *pb.AuthorizationResponse) (*pb.QRImageResponse, error) {
 	username, err := jwt.ExtractUsernameFromToken(ctx)
+	fmt.Println("Request for qr started ", username)
 	if err != nil {
 		return nil, status.Error(400, "Wrong username in token!")
 	}

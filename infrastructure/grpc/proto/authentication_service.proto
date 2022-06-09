@@ -71,7 +71,7 @@ service AuthenticationService{
 
   rpc RegisterToGoogleAuthenticatior(AuthorizationResponse) returns(QRImageResponse){
     option (google.api.http) = {
-      post: "/generate-qrcode"
+      get: "/generate-qrcode"
     };
   }
 }
