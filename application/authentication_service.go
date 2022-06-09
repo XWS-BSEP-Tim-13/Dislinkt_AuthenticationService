@@ -361,7 +361,25 @@ func (service *AuthenticationService) CheckMFACode(username, token string) error
 		return err
 	}
 	fmt.Printf("Token string [%s] validation is : %v \n", trimmedToken, ok)
+	if !ok {
+		err := errors.New("wrong input")
+		return err
+	}
 	return nil
+}
+
+func (service *AuthenticationService) ResetSetMFACode(username string) {
+	user, _ := service.store.GetByUsername(username)
+	user.MFASecret = ""
+	service.store.UpdateMFASecret(user)
+}
+
+func (service *AuthenticationService) CheckIfMFAActive(username string) bool {
+	user, _ := service.store.GetByUsername(username)
+	if user.MFASecret == "" {
+		return false
+	}
+	return true
 }
 
 func randStr(strSize int, randType string) string {

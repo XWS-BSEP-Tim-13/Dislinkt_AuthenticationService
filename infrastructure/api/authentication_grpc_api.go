@@ -264,6 +264,22 @@ func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request 
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
+	username, _ := jwt.ExtractUsernameFromToken(ctx)
+	handler.service.ResetSetMFACode(username)
+	response := &pb.AuthorizationResponse{}
+	return response, nil
+}
+
+func (handler *AuthenticationHandler) CheckIfMFAActive(ctx context.Context, request *pb.AuthorizationResponse) (*pb.CheckIfMFAActiveResponse, error) {
+	username, _ := jwt.ExtractUsernameFromToken(ctx)
+	resp := handler.service.CheckIfMFAActive(username)
+	response := &pb.CheckIfMFAActiveResponse{
+		IsActive: resp,
+	}
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) CheckIfUserExist(ctx context.Context, request *pb.CheckIfUserExistsRequest) (*pb.CheckIfUserExistsResponse, error) {
 	resp := handler.service.CheckIfUserExists(request.Username)
 	response := &pb.CheckIfUserExistsResponse{

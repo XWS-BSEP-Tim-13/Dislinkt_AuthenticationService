@@ -80,6 +80,22 @@ service AuthenticationService{
       get: "/mfa/{token}"
     };
   }
+
+  rpc ResetSetMFACode(AuthorizationResponse) returns(AuthorizationResponse){
+    option (google.api.http) = {
+      put: "/mfa/reset"
+    };
+  }
+
+  rpc CheckIfMFAActive(AuthorizationResponse) returns(CheckIfMFAActiveResponse){
+    option (google.api.http) = {
+      get: "/mfa/check"
+    };
+  }
+}
+
+message CheckIfMFAActiveResponse{
+  bool isActive =1;
 }
 
 message QRImageResponse{
