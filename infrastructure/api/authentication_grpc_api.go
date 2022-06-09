@@ -234,6 +234,21 @@ func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request 
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context.Context, request *pb.AuthorizationResponse) (*pb.QRImageResponse, error) {
+	username, err := jwt.ExtractUsernameFromToken(ctx)
+	if err != nil {
+		return nil, status.Error(400, "Wrong username in token!")
+	}
+	qr, err := handler.service.RegisterToGoogleAuthenticatior(username)
+	if err != nil {
+		return nil, err
+	}
+	response := &pb.QRImageResponse{
+		Image: qr,
+	}
+	return response, nil
+}
+
 func (handler *AuthenticationHandler) CheckIfUserExist(ctx context.Context, request *pb.CheckIfUserExistsRequest) (*pb.CheckIfUserExistsResponse, error) {
 	resp := handler.service.CheckIfUserExists(request.Username)
 	response := &pb.CheckIfUserExistsResponse{

@@ -68,6 +68,16 @@ service AuthenticationService{
   rpc ActivateAccount(ActivateAccountRequest) returns(ActivateAccountResponse) {}
 
   rpc CheckIfUserExist(CheckIfUserExistsRequest)returns(CheckIfUserExistsResponse){}
+
+  rpc RegisterToGoogleAuthenticatior(AuthorizationResponse) returns(QRImageResponse){
+    option (google.api.http) = {
+      post: "/generate-qrcode"
+    };
+  }
+}
+
+message QRImageResponse{
+  bytes image =1;
 }
 
 message CheckIfUserExistsRequest{

@@ -3,7 +3,9 @@ module github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService
 go 1.18
 
 require (
+	github.com/boombuler/barcode v1.0.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/disintegration/imaging v1.6.2
 	github.com/go-playground/validator/v10 v10.11.0
 	github.com/go-stomp/stomp v2.1.4+incompatible
 	github.com/google/uuid v1.1.2
@@ -35,9 +37,9 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/lib/pq v1.10.5 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	golang.org/x/image v0.0.0-20191009234506-e7c1f5e7dbb8 // indirect
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
 	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
-	pack.ag/amqp v0.12.5 // indirect
 )

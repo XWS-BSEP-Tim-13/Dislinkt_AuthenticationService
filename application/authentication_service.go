@@ -1,11 +1,17 @@
 package application
 
 import (
+	"bytes"
 	"crypto/rand"
+	"encoding/base32"
 	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
+	"github.com/boombuler/barcode"
+	"github.com/boombuler/barcode/qr"
 	"github.com/google/uuid"
+	"image/png"
+	"runtime"
 	"time"
 )
 
@@ -312,4 +318,50 @@ func (service *AuthenticationService) LoginWithCode(credentials *domain.Password
 	token.TokenString = validToken
 
 	return &token, nil
+}
+
+func (service *AuthenticationService) RegisterToGoogleAuthenticatior(username string) ([]byte, error) {
+	user, _ := service.store.GetByUsername(username)
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	randomStr := randStr(6, "alphanum")
+	fmt.Println(randomStr)
+	secret := base32.StdEncoding.EncodeToString([]byte(randomStr))
+	authLink := "otpauth://totp/SocketLoop?secret=" + secret + "&issuer=" + user.Email
+	code, err := qr.Encode(authLink, qr.L, qr.Auto)
+	code, _ = barcode.Scale(code, 512, 512)
+	if err != nil {
+		err := errors.New("error while creating barcode")
+		return nil, err
+	}
+	buf := &bytes.Buffer{}
+	err = png.Encode(buf, code)
+	if err != nil {
+		err := errors.New("error converting code to bytes")
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}
+
+func randStr(strSize int, randType string) string {
+
+	var dictionary string
+
+	if randType == "alphanum" {
+		dictionary = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	}
+
+	if randType == "alpha" {
+		dictionary = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
+	}
+
+	if randType == "number" {
+		dictionary = "0123456789"
+	}
+
+	var bytes = make([]byte, strSize)
+	rand.Read(bytes)
+	for k, v := range bytes {
+		bytes[k] = dictionary[v%byte(len(dictionary))]
+	}
+	return string(bytes)
 }
