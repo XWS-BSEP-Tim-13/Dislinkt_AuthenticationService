@@ -273,6 +273,7 @@ func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, reque
 
 func (handler *AuthenticationHandler) CheckIfMFAActive(ctx context.Context, request *pb.AuthorizationResponse) (*pb.CheckIfMFAActiveResponse, error) {
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
+	fmt.Println("Username is :", username)
 	resp := handler.service.CheckIfMFAActive(username)
 	response := &pb.CheckIfMFAActiveResponse{
 		IsActive: resp,

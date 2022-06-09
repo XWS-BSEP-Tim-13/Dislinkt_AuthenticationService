@@ -35,6 +35,7 @@ type AuthenticationServiceClient interface {
 	CheckIfUserExist(ctx context.Context, in *CheckIfUserExistsRequest, opts ...grpc.CallOption) (*CheckIfUserExistsResponse, error)
 	RegisterToGoogleAuthenticatior(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*QRImageResponse, error)
 	CheckMFACode(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
+	CheckMFACodeUnauthorized(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	ResetSetMFACode(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	CheckIfMFAActive(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*CheckIfMFAActiveResponse, error)
 }
@@ -164,6 +165,15 @@ func (c *authenticationServiceClient) CheckMFACode(ctx context.Context, in *Chan
 	return out, nil
 }
 
+func (c *authenticationServiceClient) CheckMFACodeUnauthorized(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error) {
+	out := new(AuthorizationResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/CheckMFACodeUnauthorized", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *authenticationServiceClient) ResetSetMFACode(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error) {
 	out := new(AuthorizationResponse)
 	err := c.cc.Invoke(ctx, "/post.AuthenticationService/ResetSetMFACode", in, out, opts...)
@@ -199,6 +209,7 @@ type AuthenticationServiceServer interface {
 	CheckIfUserExist(context.Context, *CheckIfUserExistsRequest) (*CheckIfUserExistsResponse, error)
 	RegisterToGoogleAuthenticatior(context.Context, *AuthorizationResponse) (*QRImageResponse, error)
 	CheckMFACode(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error)
+	CheckMFACodeUnauthorized(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error)
 	ResetSetMFACode(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error)
 	CheckIfMFAActive(context.Context, *AuthorizationResponse) (*CheckIfMFAActiveResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
@@ -246,6 +257,9 @@ func (UnimplementedAuthenticationServiceServer) RegisterToGoogleAuthenticatior(c
 }
 func (UnimplementedAuthenticationServiceServer) CheckMFACode(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckMFACode not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) CheckMFACodeUnauthorized(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckMFACodeUnauthorized not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) ResetSetMFACode(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ResetSetMFACode not implemented")
@@ -500,6 +514,24 @@ func _AuthenticationService_CheckMFACode_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_CheckMFACodeUnauthorized_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordPageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).CheckMFACodeUnauthorized(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/CheckMFACodeUnauthorized",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).CheckMFACodeUnauthorized(ctx, req.(*ChangePasswordPageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AuthenticationService_ResetSetMFACode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(AuthorizationResponse)
 	if err := dec(in); err != nil {
@@ -594,6 +626,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckMFACode",
 			Handler:    _AuthenticationService_CheckMFACode_Handler,
+		},
+		{
+			MethodName: "CheckMFACodeUnauthorized",
+			Handler:    _AuthenticationService_CheckMFACodeUnauthorized_Handler,
 		},
 		{
 			MethodName: "ResetSetMFACode",

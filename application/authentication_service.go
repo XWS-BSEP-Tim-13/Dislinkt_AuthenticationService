@@ -348,6 +348,7 @@ func (service *AuthenticationService) RegisterToGoogleAuthenticatior(username st
 
 func (service *AuthenticationService) CheckMFACode(username, token string) error {
 	user, _ := service.store.GetByUsername(username)
+	fmt.Println(user)
 	otpConfig := &dgoogauth.OTPConfig{
 		Secret:      strings.TrimSpace(user.MFASecret),
 		WindowSize:  3,
@@ -355,13 +356,16 @@ func (service *AuthenticationService) CheckMFACode(username, token string) error
 	}
 
 	trimmedToken := strings.TrimSpace(token)
+	fmt.Println("Trimmed token :", trimmedToken)
 	ok, err := otpConfig.Authenticate(trimmedToken)
 	if err != nil {
+		fmt.Println("erorrrrr1")
 		fmt.Println(err)
 		return err
 	}
 	fmt.Printf("Token string [%s] validation is : %v \n", trimmedToken, ok)
 	if !ok {
+		fmt.Println("erorrrrr2")
 		err := errors.New("wrong input")
 		return err
 	}
