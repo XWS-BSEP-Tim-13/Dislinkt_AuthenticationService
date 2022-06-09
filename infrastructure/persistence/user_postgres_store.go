@@ -82,6 +82,13 @@ func (store *AuthenticationPostgresStore) UpdatePassword(user *domain.User) erro
 	return nil
 }
 
+func (store *AuthenticationPostgresStore) UpdateMFASecret(user *domain.User) error {
+	if err := store.db.Model(&user).Where("id = ?", user.ID).Update("mfa-secret", user.MFASecret).Error; err != nil {
+		return fmt.Errorf("failed to update password")
+	}
+	return nil
+}
+
 func (store *AuthenticationPostgresStore) GetAllActiveAccounts() (*[]domain.User, error) {
 
 	var users []domain.User

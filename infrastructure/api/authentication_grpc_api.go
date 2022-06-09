@@ -249,6 +249,20 @@ func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context
 	}
 	return response, nil
 }
+func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request *pb.ChangePasswordPageRequest) (*pb.AuthorizationResponse, error) {
+	username, err := jwt.ExtractUsernameFromToken(ctx)
+	fmt.Println("Request for qr started ", username)
+	if err != nil {
+		return nil, status.Error(400, "Wrong username in token!")
+	}
+	err = handler.service.CheckMFACode(username, request.Token)
+	if err != nil {
+		return nil, status.Error(400, "Wrong code input!")
+	}
+	response := &pb.AuthorizationResponse{}
+
+	return response, nil
+}
 
 func (handler *AuthenticationHandler) CheckIfUserExist(ctx context.Context, request *pb.CheckIfUserExistsRequest) (*pb.CheckIfUserExistsResponse, error) {
 	resp := handler.service.CheckIfUserExists(request.Username)

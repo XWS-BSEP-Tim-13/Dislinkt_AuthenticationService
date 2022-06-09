@@ -34,6 +34,7 @@ type AuthenticationServiceClient interface {
 	ActivateAccount(ctx context.Context, in *ActivateAccountRequest, opts ...grpc.CallOption) (*ActivateAccountResponse, error)
 	CheckIfUserExist(ctx context.Context, in *CheckIfUserExistsRequest, opts ...grpc.CallOption) (*CheckIfUserExistsResponse, error)
 	RegisterToGoogleAuthenticatior(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*QRImageResponse, error)
+	CheckMFACode(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 }
 
 type authenticationServiceClient struct {
@@ -152,6 +153,15 @@ func (c *authenticationServiceClient) RegisterToGoogleAuthenticatior(ctx context
 	return out, nil
 }
 
+func (c *authenticationServiceClient) CheckMFACode(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error) {
+	out := new(AuthorizationResponse)
+	err := c.cc.Invoke(ctx, "/post.AuthenticationService/CheckMFACode", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AuthenticationServiceServer is the server API for AuthenticationService service.
 // All implementations must embed UnimplementedAuthenticationServiceServer
 // for forward compatibility
@@ -168,6 +178,7 @@ type AuthenticationServiceServer interface {
 	ActivateAccount(context.Context, *ActivateAccountRequest) (*ActivateAccountResponse, error)
 	CheckIfUserExist(context.Context, *CheckIfUserExistsRequest) (*CheckIfUserExistsResponse, error)
 	RegisterToGoogleAuthenticatior(context.Context, *AuthorizationResponse) (*QRImageResponse, error)
+	CheckMFACode(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
 }
 
@@ -210,6 +221,9 @@ func (UnimplementedAuthenticationServiceServer) CheckIfUserExist(context.Context
 }
 func (UnimplementedAuthenticationServiceServer) RegisterToGoogleAuthenticatior(context.Context, *AuthorizationResponse) (*QRImageResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterToGoogleAuthenticatior not implemented")
+}
+func (UnimplementedAuthenticationServiceServer) CheckMFACode(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CheckMFACode not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) mustEmbedUnimplementedAuthenticationServiceServer() {}
 
@@ -440,6 +454,24 @@ func _AuthenticationService_RegisterToGoogleAuthenticatior_Handler(srv interface
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AuthenticationService_CheckMFACode_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ChangePasswordPageRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AuthenticationServiceServer).CheckMFACode(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/post.AuthenticationService/CheckMFACode",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AuthenticationServiceServer).CheckMFACode(ctx, req.(*ChangePasswordPageRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AuthenticationService_ServiceDesc is the grpc.ServiceDesc for AuthenticationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -494,6 +526,10 @@ var AuthenticationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RegisterToGoogleAuthenticatior",
 			Handler:    _AuthenticationService_RegisterToGoogleAuthenticatior_Handler,
+		},
+		{
+			MethodName: "CheckMFACode",
+			Handler:    _AuthenticationService_CheckMFACode_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

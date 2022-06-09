@@ -11,4 +11,5 @@ type UserStore interface {
 	GetByEmail(email string) (*User, error)
 	UpdatePassword(user *User) error
 	UpdateIsActive(user *User) error
+	UpdateMFASecret(user *User) error
 }

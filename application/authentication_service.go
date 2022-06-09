@@ -9,9 +9,11 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
+	"github.com/dgryski/dgoogauth"
 	"github.com/google/uuid"
 	"image/png"
 	"runtime"
+	"strings"
 	"time"
 )
 
@@ -326,7 +328,7 @@ func (service *AuthenticationService) RegisterToGoogleAuthenticatior(username st
 	randomStr := randStr(6, "alphanum")
 	fmt.Println(randomStr)
 	secret := base32.StdEncoding.EncodeToString([]byte(randomStr))
-	authLink := "otpauth://totp/SocketLoop?secret=" + secret + "&issuer=" + user.Email
+	authLink := "otpauth://totp/Dislinkt?secret=" + secret + "&issuer=" + user.Email
 	code, err := qr.Encode(authLink, qr.L, qr.Auto)
 	code, _ = barcode.Scale(code, 512, 512)
 	if err != nil {
@@ -339,7 +341,27 @@ func (service *AuthenticationService) RegisterToGoogleAuthenticatior(username st
 		err := errors.New("error converting code to bytes")
 		return nil, err
 	}
+	user.MFASecret = secret
+	service.store.UpdateMFASecret(user)
 	return buf.Bytes(), nil
+}
+
+func (service *AuthenticationService) CheckMFACode(username, token string) error {
+	user, _ := service.store.GetByUsername(username)
+	otpConfig := &dgoogauth.OTPConfig{
+		Secret:      strings.TrimSpace(user.MFASecret),
+		WindowSize:  3,
+		HotpCounter: 0,
+	}
+
+	trimmedToken := strings.TrimSpace(token)
+	ok, err := otpConfig.Authenticate(trimmedToken)
+	if err != nil {
+		fmt.Println(err)
+		return err
+	}
+	fmt.Printf("Token string [%s] validation is : %v \n", trimmedToken, ok)
+	return nil
 }
 
 func randStr(strSize int, randType string) string {
