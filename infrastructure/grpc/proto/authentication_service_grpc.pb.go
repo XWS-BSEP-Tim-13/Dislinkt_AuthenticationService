@@ -35,7 +35,7 @@ type AuthenticationServiceClient interface {
 	CheckIfUserExist(ctx context.Context, in *CheckIfUserExistsRequest, opts ...grpc.CallOption) (*CheckIfUserExistsResponse, error)
 	RegisterToGoogleAuthenticatior(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*QRImageResponse, error)
 	CheckMFACode(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
-	CheckMFACodeUnauthorized(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error)
+	CheckMFACodeUnauthorized(ctx context.Context, in *MFALoginRequest, opts ...grpc.CallOption) (*Token, error)
 	ResetSetMFACode(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*AuthorizationResponse, error)
 	CheckIfMFAActive(ctx context.Context, in *AuthorizationResponse, opts ...grpc.CallOption) (*CheckIfMFAActiveResponse, error)
 }
@@ -165,8 +165,8 @@ func (c *authenticationServiceClient) CheckMFACode(ctx context.Context, in *Chan
 	return out, nil
 }
 
-func (c *authenticationServiceClient) CheckMFACodeUnauthorized(ctx context.Context, in *ChangePasswordPageRequest, opts ...grpc.CallOption) (*AuthorizationResponse, error) {
-	out := new(AuthorizationResponse)
+func (c *authenticationServiceClient) CheckMFACodeUnauthorized(ctx context.Context, in *MFALoginRequest, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
 	err := c.cc.Invoke(ctx, "/post.AuthenticationService/CheckMFACodeUnauthorized", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -209,7 +209,7 @@ type AuthenticationServiceServer interface {
 	CheckIfUserExist(context.Context, *CheckIfUserExistsRequest) (*CheckIfUserExistsResponse, error)
 	RegisterToGoogleAuthenticatior(context.Context, *AuthorizationResponse) (*QRImageResponse, error)
 	CheckMFACode(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error)
-	CheckMFACodeUnauthorized(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error)
+	CheckMFACodeUnauthorized(context.Context, *MFALoginRequest) (*Token, error)
 	ResetSetMFACode(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error)
 	CheckIfMFAActive(context.Context, *AuthorizationResponse) (*CheckIfMFAActiveResponse, error)
 	mustEmbedUnimplementedAuthenticationServiceServer()
@@ -258,7 +258,7 @@ func (UnimplementedAuthenticationServiceServer) RegisterToGoogleAuthenticatior(c
 func (UnimplementedAuthenticationServiceServer) CheckMFACode(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckMFACode not implemented")
 }
-func (UnimplementedAuthenticationServiceServer) CheckMFACodeUnauthorized(context.Context, *ChangePasswordPageRequest) (*AuthorizationResponse, error) {
+func (UnimplementedAuthenticationServiceServer) CheckMFACodeUnauthorized(context.Context, *MFALoginRequest) (*Token, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckMFACodeUnauthorized not implemented")
 }
 func (UnimplementedAuthenticationServiceServer) ResetSetMFACode(context.Context, *AuthorizationResponse) (*AuthorizationResponse, error) {
@@ -515,7 +515,7 @@ func _AuthenticationService_CheckMFACode_Handler(srv interface{}, ctx context.Co
 }
 
 func _AuthenticationService_CheckMFACodeUnauthorized_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ChangePasswordPageRequest)
+	in := new(MFALoginRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -527,7 +527,7 @@ func _AuthenticationService_CheckMFACodeUnauthorized_Handler(srv interface{}, ct
 		FullMethod: "/post.AuthenticationService/CheckMFACodeUnauthorized",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(AuthenticationServiceServer).CheckMFACodeUnauthorized(ctx, req.(*ChangePasswordPageRequest))
+		return srv.(AuthenticationServiceServer).CheckMFACodeUnauthorized(ctx, req.(*MFALoginRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

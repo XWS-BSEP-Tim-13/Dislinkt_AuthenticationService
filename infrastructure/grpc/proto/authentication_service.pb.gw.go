@@ -358,7 +358,7 @@ func local_request_AuthenticationService_CheckMFACode_0(ctx context.Context, mar
 }
 
 func request_AuthenticationService_CheckMFACodeUnauthorized_0(ctx context.Context, marshaler runtime.Marshaler, client AuthenticationServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ChangePasswordPageRequest
+	var protoReq MFALoginRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -376,6 +376,16 @@ func request_AuthenticationService_CheckMFACodeUnauthorized_0(ctx context.Contex
 	protoReq.Token, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token", err)
+	}
+
+	val, ok = pathParams["username"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "username")
+	}
+
+	protoReq.Username, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "username", err)
 	}
 
 	msg, err := client.CheckMFACodeUnauthorized(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -384,7 +394,7 @@ func request_AuthenticationService_CheckMFACodeUnauthorized_0(ctx context.Contex
 }
 
 func local_request_AuthenticationService_CheckMFACodeUnauthorized_0(ctx context.Context, marshaler runtime.Marshaler, server AuthenticationServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq ChangePasswordPageRequest
+	var protoReq MFALoginRequest
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -402,6 +412,16 @@ func local_request_AuthenticationService_CheckMFACodeUnauthorized_0(ctx context.
 	protoReq.Token, err = runtime.String(val)
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "token", err)
+	}
+
+	val, ok = pathParams["username"]
+	if !ok {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "username")
+	}
+
+	protoReq.Username, err = runtime.String(val)
+	if err != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "username", err)
 	}
 
 	msg, err := server.CheckMFACodeUnauthorized(ctx, &protoReq)
@@ -698,7 +718,7 @@ func RegisterAuthenticationServiceHandlerServer(ctx context.Context, mux *runtim
 		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/post.AuthenticationService/CheckMFACodeUnauthorized", runtime.WithHTTPPathPattern("/mfa/unauth/{token}"))
+		ctx, err = runtime.AnnotateIncomingContext(ctx, mux, req, "/post.AuthenticationService/CheckMFACodeUnauthorized", runtime.WithHTTPPathPattern("/mfa-login/{token}/{username}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1019,7 +1039,7 @@ func RegisterAuthenticationServiceHandlerClient(ctx context.Context, mux *runtim
 		defer cancel()
 		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
 		var err error
-		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/post.AuthenticationService/CheckMFACodeUnauthorized", runtime.WithHTTPPathPattern("/mfa/unauth/{token}"))
+		ctx, err = runtime.AnnotateContext(ctx, mux, req, "/post.AuthenticationService/CheckMFACodeUnauthorized", runtime.WithHTTPPathPattern("/mfa-login/{token}/{username}"))
 		if err != nil {
 			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
 			return
@@ -1101,7 +1121,7 @@ var (
 
 	pattern_AuthenticationService_CheckMFACode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1}, []string{"mfa", "token"}, ""))
 
-	pattern_AuthenticationService_CheckMFACodeUnauthorized_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2}, []string{"mfa", "unauth", "token"}, ""))
+	pattern_AuthenticationService_CheckMFACodeUnauthorized_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 1, 0, 4, 1, 5, 1, 1, 0, 4, 1, 5, 2}, []string{"mfa-login", "token", "username"}, ""))
 
 	pattern_AuthenticationService_ResetSetMFACode_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1}, []string{"mfa", "reset"}, ""))
 

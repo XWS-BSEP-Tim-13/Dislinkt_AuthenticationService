@@ -62,9 +62,15 @@ func (service *AuthenticationService) Login(credentials *domain.Credentials) (*d
 	}
 
 	var token domain.Token
-	token.Username = (*dbUser).Username
-	token.Role = (*dbUser).Role
-	token.TokenString = validToken
+	if dbUser.MFASecret != "" {
+		token.Username = (*dbUser).Username
+		token.Role = ""
+		token.TokenString = ""
+	} else {
+		token.Username = (*dbUser).Username
+		token.Role = (*dbUser).Role
+		token.TokenString = validToken
+	}
 	fmt.Println("Passed")
 	return &token, nil
 }
@@ -370,6 +376,44 @@ func (service *AuthenticationService) CheckMFACode(username, token string) error
 		return err
 	}
 	return nil
+}
+
+func (service *AuthenticationService) CheckMFACodeUnauthorized(username, token string) (*domain.Token, error) {
+	user, _ := service.store.GetByUsername(username)
+	fmt.Println(user)
+	otpConfig := &dgoogauth.OTPConfig{
+		Secret:      strings.TrimSpace(user.MFASecret),
+		WindowSize:  3,
+		HotpCounter: 0,
+	}
+
+	trimmedToken := strings.TrimSpace(token)
+	fmt.Println("Trimmed token :", trimmedToken)
+	ok, err := otpConfig.Authenticate(trimmedToken)
+	if err != nil {
+		fmt.Println("erorrrrr1")
+		fmt.Println(err)
+		return nil, err
+	}
+	fmt.Printf("Token string [%s] validation is : %v \n", trimmedToken, ok)
+	if !ok {
+		fmt.Println("erorrrrr2")
+		err := errors.New("wrong input")
+		return nil, err
+	}
+	validToken, err := service.jwtManager.GenerateJWT((*user).Username, (*user).Role)
+	if err != nil {
+		fmt.Println("Jwt erorrr")
+		err := errors.New("failed to generate token")
+		return nil, err
+	}
+
+	var tokenRet domain.Token
+
+	tokenRet.Username = (*user).Username
+	tokenRet.Role = (*user).Role
+	tokenRet.TokenString = validToken
+	return &tokenRet, nil
 }
 
 func (service *AuthenticationService) ResetSetMFACode(username string) {

@@ -264,6 +264,16 @@ func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request 
 	return response, nil
 }
 
+func (handler *AuthenticationHandler) CheckMFACodeUnauthorized(ctx context.Context, request *pb.MFALoginRequest) (*pb.Token, error) {
+
+	token, err := handler.service.CheckMFACodeUnauthorized(request.Username, request.Token)
+	if err != nil {
+		return nil, err
+	}
+	tokenPB := mapTokenToPB(token)
+	return tokenPB, nil
+}
+
 func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
 	handler.service.ResetSetMFACode(username)

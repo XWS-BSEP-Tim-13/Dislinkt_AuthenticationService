@@ -81,6 +81,12 @@ service AuthenticationService{
     };
   }
 
+  rpc CheckMFACodeUnauthorized(MFALoginRequest) returns(Token){
+    option (google.api.http) = {
+      get: "/mfa-login/{token}/{username}"
+    };
+  }
+
   rpc ResetSetMFACode(AuthorizationResponse) returns(AuthorizationResponse){
     option (google.api.http) = {
       put: "/mfa/reset"
@@ -93,6 +99,11 @@ service AuthenticationService{
     };
   }
 
+}
+
+message MFALoginRequest{
+  string token =1;
+  string username=2;
 }
 
 message CheckIfMFAActiveResponse{
