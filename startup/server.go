@@ -28,7 +28,7 @@ func NewServer(config *config.Config) *Server {
 }
 
 func (server *Server) Start() {
-	logger := logger.InitLogger("post-service", context.TODO())
+	logger := logger.InitLogger("auth-service", context.TODO())
 	postgresClient := server.initPostgresClient()
 	productStore := server.initProductStore(postgresClient)
 	tokenStore := server.initTokenStore(postgresClient)
