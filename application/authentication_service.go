@@ -7,6 +7,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/logger"
 	"github.com/boombuler/barcode"
 	"github.com/boombuler/barcode/qr"
 	"github.com/dgryski/dgoogauth"
@@ -25,9 +26,10 @@ type AuthenticationService struct {
 	verificationStore domain.VerificationStore
 	mailService       *MailService
 	activemqService   ActiveMQ
+	logger            *logger.Logger
 }
 
-func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore, mailService *MailService, activemqService ActiveMQ) *AuthenticationService {
+func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPasswordTokenStore, passwordlessStore domain.PasswordlessStore, verificationStore domain.VerificationStore, mailService *MailService, activemqService ActiveMQ, logger *logger.Logger) *AuthenticationService {
 	return &AuthenticationService{
 		store:             store,
 		jwtManager:        *NewJwtManager(),
@@ -36,6 +38,7 @@ func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPa
 		activemqService:   activemqService,
 		verificationStore: verificationStore,
 		mailService:       mailService,
+		logger:            logger,
 	}
 }
 
