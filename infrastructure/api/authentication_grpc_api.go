@@ -38,12 +38,12 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 	token, err := handler.service.Login(credentials)
 
 	if err != nil {
-		handler.logger.WarningMessage("User: " + request.Credentials.Username + " | Action: Login with bad credentials")
-		handler.logger.ErrorMessage("User: " + request.Credentials.Username + " | Action: Login with bad credentials")
+		handler.logger.WarningMessage("User: " + request.Credentials.Username + " | Action: L BC")
+		handler.logger.ErrorMessage("User: " + request.Credentials.Username + " | Action: L BC")
 		return nil, status.Error(401, "Bad credentials!")
 	}
 
-	handler.logger.InfoMessage("User: " + request.Credentials.Username + " | Action: Login")
+	handler.logger.InfoMessage("User: " + request.Credentials.Username + " | Action: L")
 	tokenPB := mapTokenToPB(token)
 	return tokenPB, nil
 }
@@ -53,20 +53,20 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 
 	err := handler.goValidator.Validator.Struct(user)
 	if err != nil {
-		handler.logger.WarningMessage("Action: Register user with invalid data")
+		handler.logger.WarningMessage("Action: RUID")
 		return nil, status.Error(500, err.Error())
 	}
 
 	newUser, err := handler.service.Register(user)
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Register user with username " + request.User.Username)
+		handler.logger.ErrorMessage("Action: RU " + request.User.Username)
 		return nil, status.Error(400, err.Error())
 	}
 
 	response := &pb.RegisterResponse{
 		Username: newUser.Username,
 	}
-	handler.logger.InfoMessage("Action: Registered user " + request.User.Username)
+	handler.logger.InfoMessage("Action: RU " + request.User.Username)
 	return response, nil
 }
 
@@ -75,7 +75,7 @@ func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, reque
 
 	activatedAccount, err := handler.service.ActivateAccount(code)
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Activate account " + activatedAccount.Username)
+		handler.logger.ErrorMessage("Action: AA " + activatedAccount.Username)
 		return nil, status.Error(500, err.Error())
 	}
 
@@ -88,7 +88,7 @@ func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, reque
 		},
 	}
 
-	handler.logger.InfoMessage("Action: Activate account " + activatedAccount.Username)
+	handler.logger.InfoMessage("Action: AA " + activatedAccount.Username)
 	return response, nil
 }
 
@@ -96,20 +96,20 @@ func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, reques
 	validate := validator.New()
 	err := validate.Var(request.Email, "required,email")
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Forgot password | Message: Invalid email format " + request.Email)
+		handler.logger.ErrorMessage("Action: FP | IE " + request.Email)
 		return nil, status.Error(400, "Wrong email format!")
 	}
 	email := request.Email
 
 	resp, err := handler.service.SaveToken(email)
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Creating forgot password token for " + request.Email)
+		handler.logger.ErrorMessage("Action: CFP  " + request.Email)
 		return nil, err
 	}
 
 	handler.mailService.SendForgotPasswordMail(resp.Token, email)
 	response := &pb.AuthorizationResponse{}
-	handler.logger.InfoMessage("Action: Send forgot password token on " + request.Email)
+	handler.logger.InfoMessage("Action: SFPT " + request.Email)
 	return response, nil
 }
 
@@ -117,17 +117,17 @@ func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, re
 	validate := validator.New()
 	err := validate.Var(request.Token, "required")
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Change password | Message: Token required")
+		handler.logger.ErrorMessage("Action: CP | TR")
 		return nil, status.Error(400, "Token is required!")
 	}
 	resp, err := handler.service.CheckIfTokenExists(request.Token)
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Change password | Message: Invalid token")
+		handler.logger.ErrorMessage("Action: CP | IT")
 		return nil, status.Error(400, "Token does not exist!")
 	}
 	time := time.Now()
 	if resp.ExpiringDate.Before(time) {
-		handler.logger.ErrorMessage("Action: Change password | Message: Token expired")
+		handler.logger.ErrorMessage("Action: CP | TE")
 		return nil, status.Error(400, "Token has expired")
 	}
 	response := &pb.ChangePasswordPageResponse{
@@ -141,17 +141,17 @@ func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, reques
 	validate := validator.New()
 	err := validate.Struct(dto)
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Change password | Message: Invalid data")
+		handler.logger.ErrorMessage("Action: CP | II")
 		return nil, status.Error(400, "Wrong input fields!")
 	}
 	resp, err := handler.service.CheckIfTokenExists(request.ChangePasswordBody.Token)
 	if err != nil {
-		handler.logger.ErrorMessage("Action: Change password | Message: Invalid token")
+		handler.logger.ErrorMessage("Action: CP | IT")
 		return nil, status.Error(400, "Token does not exist!")
 	}
 	time := time.Now()
 	if resp.ExpiringDate.Before(time) {
-		handler.logger.ErrorMessage("Action: Change password | Message: Token expired")
+		handler.logger.ErrorMessage("Action: CP | TE")
 		return nil, status.Error(400, "Token has expired")
 	}
 	err = handler.service.ChangePassword(dto, resp)
@@ -166,20 +166,20 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	email := request.PasswordlessCredentials.GetEmail()
 	user, emailErr := handler.service.GetByEmail(email)
 	if emailErr != nil || user == nil {
-		handler.logger.ErrorMessage("User: " + email + " | Action: Passwordless login | Message: User not exists")
+		handler.logger.ErrorMessage("User: " + email + " | Action: PL | NE")
 		emailErr = errors.New("user does not exist")
 		return nil, emailErr
 	}
 
 	secureCode, codeError := handler.service.GenerateSecureCode(6)
 	if codeError != nil {
-		handler.logger.ErrorMessage("User: " + email + " | Action: Passwordless login | Message: Error creating token")
+		handler.logger.ErrorMessage("User: " + email + " | Action: PL | CT")
 		return nil, codeError
 	}
 
 	codeValidationError := validation.ValidateCode(secureCode)
 	if codeValidationError != nil {
-		handler.logger.ErrorMessage("User: " + email + " | Action: Passwordless login | Message: Invalid token")
+		handler.logger.ErrorMessage("User: " + email + " | Action: PL | IT")
 		validation.PrintValidationErrors(codeValidationError)
 		return nil, codeValidationError
 	}
@@ -188,7 +188,7 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 
 	hashedCode, hashError := handler.service.HashSecureCode(secureCode)
 	if hashError != nil {
-		handler.logger.ErrorMessage("User: " + email + " | Action: Passwordless login | Message: Error hashing token")
+		handler.logger.ErrorMessage("User: " + email + " | Action: PL | HT")
 		return nil, hashError
 	}
 
@@ -196,7 +196,7 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 
 	validationError := validation.ValidatePasswordlessCredentials(credentialsDomain)
 	if validationError != nil {
-		handler.logger.ErrorMessage("User: " + email + " | Action: Passwordless login | Message: Invalid credentials")
+		handler.logger.ErrorMessage("User: " + email + " | Action: PL | IC")
 		validation.PrintValidationErrors(validationError)
 		return nil, validationError
 	}
@@ -210,7 +210,7 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 
 	err := handler.mailService.SendPasswordlessCode(email, secureCode)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + email + " | Action: Passwordless login | Message: Error with sending email")
+		handler.logger.ErrorMessage("User: " + email + " | Action: PL | Message: SM")
 		panic(err)
 	}
 
@@ -222,7 +222,7 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 		},
 	}
 
-	handler.logger.InfoMessage("User: " + email + " | Action: Passwordless login | Message: Token sent")
+	handler.logger.InfoMessage("User: " + email + " | Action: PL | TS")
 	return response, nil
 }
 
@@ -230,7 +230,7 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 	credentials := mapPasswordlessCredentialsToDomain(request.Passwordless)
 	validationError := validation.ValidatePasswordlessCredentials(credentials)
 	if validationError != nil {
-		handler.logger.ErrorMessage("User: " + credentials.Email + " | Action: Passwordless login | Message: Invalid credentials")
+		handler.logger.ErrorMessage("User: " + credentials.Email + " | Action: PL | IC")
 		validation.PrintValidationErrors(validationError)
 		return nil, validationError
 	}
@@ -238,28 +238,28 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 	token, err := handler.service.LoginWithCode(credentials)
 
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + credentials.Email + " | Action: Passwordless login | Message: Bad credentials")
+		handler.logger.ErrorMessage("User: " + credentials.Email + " | Action: PL | IC")
 		return nil, err
 	}
 
 	tokenPB := mapTokenToPB(token)
-	handler.logger.InfoMessage("User: " + credentials.Email + " | Action: Passwordless login | Message: Success")
+	handler.logger.InfoMessage("User: " + credentials.Email + " | Action: PL")
 	return tokenPB, nil
 }
 func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
 	username, err := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Printf("Sending token started %s\n", username)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + username + " | Action: Send Api token login | Message: Wrong username")
+		handler.logger.ErrorMessage("User: " + username + " | Action: SATL | u")
 		return nil, status.Error(400, "Wrong username in token!")
 	}
 	err = handler.service.SendApiToken(username)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + username + " | Action: Send Api token login")
+		handler.logger.ErrorMessage("User: " + username + " | Action: SATL")
 		return nil, err
 	}
 
-	handler.logger.InfoMessage("User: " + username + " | Action: Send Api token login")
+	handler.logger.InfoMessage("User: " + username + " | Action: SATL")
 	response := &pb.AuthorizationResponse{}
 	return response, nil
 }
@@ -268,36 +268,36 @@ func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context
 	username, err := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Println("Request for qr started ", username)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + username + " | Action: Register to Google Auth | Message: Wrong username")
+		handler.logger.ErrorMessage("User: " + username + " | Action: RGAuth")
 		return nil, status.Error(400, "Wrong username in token!")
 	}
 	qr, err := handler.service.RegisterToGoogleAuthenticatior(username)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + username + " | Action: Register to Google Auth")
+		handler.logger.ErrorMessage("User: " + username + " | Action: RGAuth")
 		return nil, err
 	}
 	response := &pb.QRImageResponse{
 		Image: qr,
 	}
 
-	handler.logger.InfoMessage("User: " + username + " | Action: Register to Google Auth")
+	handler.logger.InfoMessage("User: " + username + " | Action: RGAuth")
 	return response, nil
 }
 func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request *pb.ChangePasswordPageRequest) (*pb.AuthorizationResponse, error) {
 	username, err := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Println("Request for qr started ", username)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + username + " | Action: Check MFA Code  | Message: Wrong username")
+		handler.logger.ErrorMessage("User: " + username + " | Action: CMFAC")
 		return nil, status.Error(400, "Wrong username in token!")
 	}
 	err = handler.service.CheckMFACode(username, request.Token)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + username + " | Action: Check MFA Code  | Message: Wrong input")
+		handler.logger.ErrorMessage("User: " + username + " | Action: CMFAC")
 		return nil, status.Error(400, "Wrong code input!")
 	}
 	response := &pb.AuthorizationResponse{}
 
-	handler.logger.InfoMessage("User: " + username + " | Action: Check MFA Code")
+	handler.logger.InfoMessage("User: " + username + " | Action: CMFAC")
 	return response, nil
 }
 
@@ -305,8 +305,8 @@ func (handler *AuthenticationHandler) CheckMFACodeUnauthorized(ctx context.Conte
 
 	token, err := handler.service.CheckMFACodeUnauthorized(request.Username, request.Token)
 	if err != nil {
-		handler.logger.ErrorMessage("User: " + request.Username + " | Action: Check MFA Code | Message: Unauthorized")
-		handler.logger.WarningMessage("User: " + request.Username + " | Action: Check MFA Code | Message: Unauthorized")
+		handler.logger.ErrorMessage("User: " + request.Username + " | Action: CMFAC | 403")
+		handler.logger.WarningMessage("User: " + request.Username + " | Action: CMFAC | 403")
 		return nil, err
 	}
 	tokenPB := mapTokenToPB(token)
@@ -316,7 +316,7 @@ func (handler *AuthenticationHandler) CheckMFACodeUnauthorized(ctx context.Conte
 func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
 	handler.service.ResetSetMFACode(username)
-	handler.logger.InfoMessage("User: " + username + " | Action: Reset set MFA Code")
+	handler.logger.InfoMessage("User: " + username + " | Action: RSMFAC")
 	response := &pb.AuthorizationResponse{}
 	return response, nil
 }
