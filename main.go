@@ -12,4 +12,5 @@ func main() {
 	fmt.Println("Server is starting...")
 	server.Start()
 
+	defer server.CloseTracer()
 }

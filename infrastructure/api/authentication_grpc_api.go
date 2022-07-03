@@ -9,6 +9,7 @@ import (
 	pb "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/grpc/proto"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/jwt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/logger"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -34,6 +35,9 @@ func NewAuthenticationHandler(service *application.AuthenticationService, mailSe
 }
 
 func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.LoginRequest) (*pb.Token, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "Login")
+	defer span.Finish()
+
 	credentials := mapCredentialsToDomain(request.Credentials)
 	token, err := handler.service.Login(credentials)
 
@@ -49,6 +53,9 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 }
 
 func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.RegisterRequest) (*pb.RegisterResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "Register")
+	defer span.Finish()
+
 	user := mapUserToDomain(request.User)
 
 	err := handler.goValidator.Validator.Struct(user)
@@ -71,6 +78,9 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 }
 
 func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, request *pb.ActivateAccountRequest) (*pb.ActivateAccountResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "ActivateAccount")
+	defer span.Finish()
+
 	code := request.Code
 
 	activatedAccount, err := handler.service.ActivateAccount(code)
@@ -93,6 +103,9 @@ func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, reque
 }
 
 func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, request *pb.ForgotPasswordRequest) (*pb.AuthorizationResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "ForgotPassword")
+	defer span.Finish()
+
 	validate := validator.New()
 	err := validate.Var(request.Email, "required,email")
 	if err != nil {
@@ -114,6 +127,9 @@ func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, reques
 }
 
 func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, request *pb.ChangePasswordPageRequest) (*pb.ChangePasswordPageResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "ChangePasswordPage")
+	defer span.Finish()
+
 	validate := validator.New()
 	err := validate.Var(request.Token, "required")
 	if err != nil {
@@ -137,6 +153,9 @@ func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, re
 }
 
 func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, request *pb.ChangePasswordRequest) (*pb.AuthorizationResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "ChangePassword")
+	defer span.Finish()
+
 	dto := mapChangePasswordPbToDto(request.ChangePasswordBody)
 	validate := validator.New()
 	err := validate.Struct(dto)
@@ -163,6 +182,9 @@ func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, reques
 }
 
 func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request *pb.GenerateCodeRequest) (*pb.GenerateCodeResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateCode")
+	defer span.Finish()
+
 	email := request.PasswordlessCredentials.GetEmail()
 	user, emailErr := handler.service.GetByEmail(email)
 	if emailErr != nil || user == nil {
@@ -227,6 +249,9 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 }
 
 func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request *pb.PasswordlessLoginRequest) (*pb.Token, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "LoginWithCode")
+	defer span.Finish()
+
 	credentials := mapPasswordlessCredentialsToDomain(request.Passwordless)
 	validationError := validation.ValidatePasswordlessCredentials(credentials)
 	if validationError != nil {
@@ -247,6 +272,9 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 	return tokenPB, nil
 }
 func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "SendApiToken")
+	defer span.Finish()
+
 	username, err := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Printf("Sending token started %s\n", username)
 	if err != nil {
@@ -265,6 +293,9 @@ func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request 
 }
 
 func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context.Context, request *pb.AuthorizationResponse) (*pb.QRImageResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "RegisterToGoogleAuthenticatior")
+	defer span.Finish()
+
 	username, err := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Println("Request for qr started ", username)
 	if err != nil {
@@ -284,6 +315,9 @@ func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context
 	return response, nil
 }
 func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request *pb.ChangePasswordPageRequest) (*pb.AuthorizationResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckMFACode")
+	defer span.Finish()
+
 	username, err := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Println("Request for qr started ", username)
 	if err != nil {
@@ -302,6 +336,8 @@ func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request 
 }
 
 func (handler *AuthenticationHandler) CheckMFACodeUnauthorized(ctx context.Context, request *pb.MFALoginRequest) (*pb.Token, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckMFACodeUnauthorized")
+	defer span.Finish()
 
 	token, err := handler.service.CheckMFACodeUnauthorized(request.Username, request.Token)
 	if err != nil {
@@ -314,6 +350,9 @@ func (handler *AuthenticationHandler) CheckMFACodeUnauthorized(ctx context.Conte
 }
 
 func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, request *pb.AuthorizationResponse) (*pb.AuthorizationResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "ResetSetMFACode")
+	defer span.Finish()
+
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
 	handler.service.ResetSetMFACode(username)
 	handler.logger.InfoMessage("User: " + username + " | Action: RSMFAC")
@@ -322,6 +361,9 @@ func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, reque
 }
 
 func (handler *AuthenticationHandler) CheckIfMFAActive(ctx context.Context, request *pb.AuthorizationResponse) (*pb.CheckIfMFAActiveResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIfMFAActive")
+	defer span.Finish()
+
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Println("Username is :", username)
 	resp := handler.service.CheckIfMFAActive(username)
@@ -332,6 +374,9 @@ func (handler *AuthenticationHandler) CheckIfMFAActive(ctx context.Context, requ
 }
 
 func (handler *AuthenticationHandler) CheckIfUserExist(ctx context.Context, request *pb.CheckIfUserExistsRequest) (*pb.CheckIfUserExistsResponse, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIfUserExist")
+	defer span.Finish()
+
 	resp := handler.service.CheckIfUserExists(request.Username)
 	response := &pb.CheckIfUserExistsResponse{
 		Exists: resp,

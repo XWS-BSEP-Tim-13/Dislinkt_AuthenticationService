@@ -12,10 +12,13 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/persistence"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/logger"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/startup/config"
+	tracer "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
+	otgo "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 	"gorm.io/gorm"
+	"io"
 	"io/ioutil"
 	"log"
 	"net"
@@ -23,6 +26,8 @@ import (
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 const (
@@ -32,8 +37,13 @@ const (
 )
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init()
+	otgo.SetGlobalTracer(tracer)
+
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 
@@ -165,4 +175,16 @@ func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationH
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+}
+
+func (server *Server) GetTracer() otgo.Tracer {
+	return server.tracer
+}
+
+func (server *Server) GetCloser() io.Closer {
+	return server.closer
+}
+
+func (server *Server) CloseTracer() error {
+	return server.closer.Close()
 }
