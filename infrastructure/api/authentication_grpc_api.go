@@ -38,8 +38,10 @@ func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.Log
 	span := tracer.StartSpanFromContextMetadata(ctx, "Login")
 	defer span.Finish()
 
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	credentials := mapCredentialsToDomain(request.Credentials)
-	token, err := handler.service.Login(credentials)
+	token, err := handler.service.Login(ctx, credentials)
 
 	if err != nil {
 		handler.logger.WarningMessage("User: " + request.Credentials.Username + " | Action: L BC")
@@ -64,7 +66,7 @@ func (handler *AuthenticationHandler) Register(ctx context.Context, request *pb.
 		return nil, status.Error(500, err.Error())
 	}
 
-	newUser, err := handler.service.Register(user)
+	newUser, err := handler.service.Register(ctx, user)
 	if err != nil {
 		handler.logger.ErrorMessage("Action: RU " + request.User.Username)
 		return nil, status.Error(400, err.Error())
@@ -83,7 +85,7 @@ func (handler *AuthenticationHandler) ActivateAccount(ctx context.Context, reque
 
 	code := request.Code
 
-	activatedAccount, err := handler.service.ActivateAccount(code)
+	activatedAccount, err := handler.service.ActivateAccount(ctx, code)
 	if err != nil {
 		handler.logger.ErrorMessage("Action: AA " + activatedAccount.Username)
 		return nil, status.Error(500, err.Error())
@@ -114,13 +116,13 @@ func (handler *AuthenticationHandler) ForgotPassword(ctx context.Context, reques
 	}
 	email := request.Email
 
-	resp, err := handler.service.SaveToken(email)
+	resp, err := handler.service.SaveToken(ctx, email)
 	if err != nil {
 		handler.logger.ErrorMessage("Action: CFP  " + request.Email)
 		return nil, err
 	}
 
-	handler.mailService.SendForgotPasswordMail(resp.Token, email)
+	handler.mailService.SendForgotPasswordMail(ctx, resp.Token, email)
 	response := &pb.AuthorizationResponse{}
 	handler.logger.InfoMessage("Action: SFPT " + request.Email)
 	return response, nil
@@ -136,7 +138,7 @@ func (handler *AuthenticationHandler) ChangePasswordPage(ctx context.Context, re
 		handler.logger.ErrorMessage("Action: CP | TR")
 		return nil, status.Error(400, "Token is required!")
 	}
-	resp, err := handler.service.CheckIfTokenExists(request.Token)
+	resp, err := handler.service.CheckIfTokenExists(ctx, request.Token)
 	if err != nil {
 		handler.logger.ErrorMessage("Action: CP | IT")
 		return nil, status.Error(400, "Token does not exist!")
@@ -163,7 +165,7 @@ func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, reques
 		handler.logger.ErrorMessage("Action: CP | II")
 		return nil, status.Error(400, "Wrong input fields!")
 	}
-	resp, err := handler.service.CheckIfTokenExists(request.ChangePasswordBody.Token)
+	resp, err := handler.service.CheckIfTokenExists(ctx, request.ChangePasswordBody.Token)
 	if err != nil {
 		handler.logger.ErrorMessage("Action: CP | IT")
 		return nil, status.Error(400, "Token does not exist!")
@@ -173,7 +175,7 @@ func (handler *AuthenticationHandler) ChangePassword(ctx context.Context, reques
 		handler.logger.ErrorMessage("Action: CP | TE")
 		return nil, status.Error(400, "Token has expired")
 	}
-	err = handler.service.ChangePassword(dto, resp)
+	err = handler.service.ChangePassword(ctx, dto, resp)
 	if err != nil {
 		return nil, err
 	}
@@ -186,14 +188,14 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 	defer span.Finish()
 
 	email := request.PasswordlessCredentials.GetEmail()
-	user, emailErr := handler.service.GetByEmail(email)
+	user, emailErr := handler.service.GetByEmail(ctx, email)
 	if emailErr != nil || user == nil {
 		handler.logger.ErrorMessage("User: " + email + " | Action: PL | NE")
 		emailErr = errors.New("user does not exist")
 		return nil, emailErr
 	}
 
-	secureCode, codeError := handler.service.GenerateSecureCode(6)
+	secureCode, codeError := handler.service.GenerateSecureCode(ctx, 6)
 	if codeError != nil {
 		handler.logger.ErrorMessage("User: " + email + " | Action: PL | CT")
 		return nil, codeError
@@ -208,7 +210,7 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 
 	fmt.Printf("Creating credentials\n")
 
-	hashedCode, hashError := handler.service.HashSecureCode(secureCode)
+	hashedCode, hashError := handler.service.HashSecureCode(ctx, secureCode)
 	if hashError != nil {
 		handler.logger.ErrorMessage("User: " + email + " | Action: PL | HT")
 		return nil, hashError
@@ -223,14 +225,14 @@ func (handler *AuthenticationHandler) GenerateCode(ctx context.Context, request 
 		return nil, validationError
 	}
 
-	_, createError := handler.service.CreatePasswordlessCredentials(credentialsDomain)
+	_, createError := handler.service.CreatePasswordlessCredentials(ctx, credentialsDomain)
 	if createError != nil {
 		return nil, createError
 	}
 	fmt.Printf("Created credentials\n")
 	fmt.Printf("Sending email\n")
 
-	err := handler.mailService.SendPasswordlessCode(email, secureCode)
+	err := handler.mailService.SendPasswordlessCode(ctx, email, secureCode)
 	if err != nil {
 		handler.logger.ErrorMessage("User: " + email + " | Action: PL | Message: SM")
 		panic(err)
@@ -260,7 +262,7 @@ func (handler *AuthenticationHandler) LoginWithCode(ctx context.Context, request
 		return nil, validationError
 	}
 
-	token, err := handler.service.LoginWithCode(credentials)
+	token, err := handler.service.LoginWithCode(ctx, credentials)
 
 	if err != nil {
 		handler.logger.ErrorMessage("User: " + credentials.Email + " | Action: PL | IC")
@@ -281,7 +283,7 @@ func (handler *AuthenticationHandler) SendApiToken(ctx context.Context, request 
 		handler.logger.ErrorMessage("User: " + username + " | Action: SATL | u")
 		return nil, status.Error(400, "Wrong username in token!")
 	}
-	err = handler.service.SendApiToken(username)
+	err = handler.service.SendApiToken(ctx, username)
 	if err != nil {
 		handler.logger.ErrorMessage("User: " + username + " | Action: SATL")
 		return nil, err
@@ -302,7 +304,7 @@ func (handler *AuthenticationHandler) RegisterToGoogleAuthenticatior(ctx context
 		handler.logger.ErrorMessage("User: " + username + " | Action: RGAuth")
 		return nil, status.Error(400, "Wrong username in token!")
 	}
-	qr, err := handler.service.RegisterToGoogleAuthenticatior(username)
+	qr, err := handler.service.RegisterToGoogleAuthenticatior(ctx, username)
 	if err != nil {
 		handler.logger.ErrorMessage("User: " + username + " | Action: RGAuth")
 		return nil, err
@@ -324,7 +326,7 @@ func (handler *AuthenticationHandler) CheckMFACode(ctx context.Context, request 
 		handler.logger.ErrorMessage("User: " + username + " | Action: CMFAC")
 		return nil, status.Error(400, "Wrong username in token!")
 	}
-	err = handler.service.CheckMFACode(username, request.Token)
+	err = handler.service.CheckMFACode(ctx, username, request.Token)
 	if err != nil {
 		handler.logger.ErrorMessage("User: " + username + " | Action: CMFAC")
 		return nil, status.Error(400, "Wrong code input!")
@@ -339,7 +341,7 @@ func (handler *AuthenticationHandler) CheckMFACodeUnauthorized(ctx context.Conte
 	span := tracer.StartSpanFromContextMetadata(ctx, "CheckMFACodeUnauthorized")
 	defer span.Finish()
 
-	token, err := handler.service.CheckMFACodeUnauthorized(request.Username, request.Token)
+	token, err := handler.service.CheckMFACodeUnauthorized(ctx, request.Username, request.Token)
 	if err != nil {
 		handler.logger.ErrorMessage("User: " + request.Username + " | Action: CMFAC | 403")
 		handler.logger.WarningMessage("User: " + request.Username + " | Action: CMFAC | 403")
@@ -354,7 +356,7 @@ func (handler *AuthenticationHandler) ResetSetMFACode(ctx context.Context, reque
 	defer span.Finish()
 
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
-	handler.service.ResetSetMFACode(username)
+	handler.service.ResetSetMFACode(ctx, username)
 	handler.logger.InfoMessage("User: " + username + " | Action: RSMFAC")
 	response := &pb.AuthorizationResponse{}
 	return response, nil
@@ -366,7 +368,7 @@ func (handler *AuthenticationHandler) CheckIfMFAActive(ctx context.Context, requ
 
 	username, _ := jwt.ExtractUsernameFromToken(ctx)
 	fmt.Println("Username is :", username)
-	resp := handler.service.CheckIfMFAActive(username)
+	resp := handler.service.CheckIfMFAActive(ctx, username)
 	response := &pb.CheckIfMFAActiveResponse{
 		IsActive: resp,
 	}
@@ -377,7 +379,7 @@ func (handler *AuthenticationHandler) CheckIfUserExist(ctx context.Context, requ
 	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIfUserExist")
 	defer span.Finish()
 
-	resp := handler.service.CheckIfUserExists(request.Username)
+	resp := handler.service.CheckIfUserExists(ctx, request.Username)
 	response := &pb.CheckIfUserExistsResponse{
 		Exists: resp,
 	}

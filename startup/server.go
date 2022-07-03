@@ -78,13 +78,13 @@ func (server *Server) initPostgresClient() *gorm.DB {
 }
 func (server *Server) initTokenStore(client *gorm.DB) domain.ForgotPasswordTokenStore {
 	store, err := persistence.NewForgotPasswordTokenPostgresStore(client)
-	store.DeleteAll()
+	store.DeleteAll(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, Token := range tokens {
-		_, err := store.Create(Token)
+		_, err := store.Create(context.TODO(), Token)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -98,9 +98,9 @@ func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store.DeleteAll()
+	store.DeleteAll(context.TODO())
 	for _, User := range users {
-		_, err := store.Create(User)
+		_, err := store.Create(context.TODO(), User)
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -1,8 +1,10 @@
 package persistence
 
 import (
+	"context"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -21,7 +23,10 @@ func NewPasswordlessPostgresStore(db *gorm.DB) (domain.PasswordlessStore, error)
 	}, nil
 }
 
-func (store PasswordlessPostgresStore) GetById(id int) (*domain.PasswordlessCredentials, error) {
+func (store PasswordlessPostgresStore) GetById(ctx context.Context, id int) (*domain.PasswordlessCredentials, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetById")
+	defer span.Finish()
+
 	var passwordless domain.PasswordlessCredentials
 	result := store.db.Find(&passwordless, id)
 
@@ -32,7 +37,10 @@ func (store PasswordlessPostgresStore) GetById(id int) (*domain.PasswordlessCred
 	return &domain.PasswordlessCredentials{}, fmt.Errorf("User with id=%s not found", id)
 }
 
-func (store PasswordlessPostgresStore) GetByEmail(email string) (*domain.PasswordlessCredentials, error) {
+func (store PasswordlessPostgresStore) GetByEmail(ctx context.Context, email string) (*domain.PasswordlessCredentials, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetByEmail")
+	defer span.Finish()
+
 	var user domain.PasswordlessCredentials
 	result := store.db.Where("email = ?", email).Find(&user)
 
@@ -43,7 +51,10 @@ func (store PasswordlessPostgresStore) GetByEmail(email string) (*domain.Passwor
 	return &domain.PasswordlessCredentials{}, fmt.Errorf("User with email=%s not found", email)
 }
 
-func (store PasswordlessPostgresStore) Create(passwordless *domain.PasswordlessCredentials) (*domain.PasswordlessCredentials, error) {
+func (store PasswordlessPostgresStore) Create(ctx context.Context, passwordless *domain.PasswordlessCredentials) (*domain.PasswordlessCredentials, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB Create")
+	defer span.Finish()
+
 	result := store.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},
 		DoUpdates: clause.AssignmentColumns([]string{"code", "expiring_date"}),
@@ -53,6 +64,6 @@ func (store PasswordlessPostgresStore) Create(passwordless *domain.PasswordlessC
 		return nil, result.Error
 	}
 	var newCredentials *domain.PasswordlessCredentials
-	newCredentials, _ = store.GetById(passwordless.ID)
+	newCredentials, _ = store.GetById(ctx, passwordless.ID)
 	return newCredentials, nil
 }

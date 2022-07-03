@@ -1,7 +1,9 @@
 package application
 
 import (
+	"context"
 	"fmt"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"github.com/dgrijalva/jwt-go"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -17,13 +19,19 @@ func NewJwtManager() *JwtManager {
 	}
 }
 
-func (manager *JwtManager) GenerateHashPassword(password string) (string, error) {
+func (manager *JwtManager) GenerateHashPassword(ctx context.Context, password string) (string, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateHashPassword")
+	defer span.Finish()
+
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	fmt.Printf("%s, %s\n", password, bytes)
 	return string(bytes), err
 }
 
-func (manager *JwtManager) GenerateJWT(username, role string) (string, error) {
+func (manager *JwtManager) GenerateJWT(ctx context.Context, username, role string) (string, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateJWT")
+	defer span.Finish()
+
 	var mySigningKey = []byte(manager.secretKey)
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -42,7 +50,10 @@ func (manager *JwtManager) GenerateJWT(username, role string) (string, error) {
 	return tokenString, nil
 }
 
-func (manager *JwtManager) GenerateJWTWithEmail(email, role string) (string, error) {
+func (manager *JwtManager) GenerateJWTWithEmail(ctx context.Context, email, role string) (string, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateJWTWithEmail")
+	defer span.Finish()
+
 	var mySigningKey = []byte(manager.secretKey)
 	token := jwt.New(jwt.SigningMethodHS256)
 	claims := token.Claims.(jwt.MapClaims)
@@ -61,7 +72,12 @@ func (manager *JwtManager) GenerateJWTWithEmail(email, role string) (string, err
 	return tokenString, nil
 }
 
-func (manager *JwtManager) CheckPasswordHash(password, hash string) bool {
+func (manager *JwtManager) CheckPasswordHash(ctx context.Context, password, hash string) bool {
+	span := tracer.StartSpanFromContextMetadata(ctx, "CheckPasswordHash")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
 }

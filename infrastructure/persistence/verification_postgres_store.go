@@ -1,9 +1,11 @@
 package persistence
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/domain"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"gorm.io/gorm"
 )
 
@@ -21,18 +23,24 @@ func NewVerificationPostgresStore(db *gorm.DB) (domain.VerificationStore, error)
 	}, nil
 }
 
-func (store *VerificationPostgresStore) Create(data *domain.VerificationData) (*domain.VerificationData, error) {
+func (store *VerificationPostgresStore) Create(ctx context.Context, data *domain.VerificationData) (*domain.VerificationData, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB Create")
+	defer span.Finish()
+
 	result := store.db.Create(data)
 	if result.Error != nil {
 		return nil, result.Error
 	}
 
 	var newData *domain.VerificationData
-	newData, _ = store.GetById(data.ID)
+	newData, _ = store.GetById(ctx, data.ID)
 	return newData, nil
 }
 
-func (store *VerificationPostgresStore) GetById(id int) (*domain.VerificationData, error) {
+func (store *VerificationPostgresStore) GetById(ctx context.Context, id int) (*domain.VerificationData, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetById")
+	defer span.Finish()
+
 	var data domain.VerificationData
 	result := store.db.Find(&data, id)
 
@@ -43,7 +51,10 @@ func (store *VerificationPostgresStore) GetById(id int) (*domain.VerificationDat
 	return &domain.VerificationData{}, fmt.Errorf("data with id=%s not found", id)
 }
 
-func (store *VerificationPostgresStore) GetByCode(code string) (*domain.VerificationData, error) {
+func (store *VerificationPostgresStore) GetByCode(ctx context.Context, code string) (*domain.VerificationData, error) {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetByCode")
+	defer span.Finish()
+
 	var data domain.VerificationData
 	result := store.db.Where("code = ?", code).Find(&data)
 
@@ -54,7 +65,10 @@ func (store *VerificationPostgresStore) GetByCode(code string) (*domain.Verifica
 	return &domain.VerificationData{}, fmt.Errorf("data with code=%s not found", code)
 }
 
-func (store *VerificationPostgresStore) UpdateUsedData(verificationData *domain.VerificationData) error {
+func (store *VerificationPostgresStore) UpdateUsedData(ctx context.Context, verificationData *domain.VerificationData) error {
+	span := tracer.StartSpanFromContextMetadata(ctx, "DB UpdateUsedData")
+	defer span.Finish()
+
 	tx := store.db.Model(&domain.VerificationData{}).
 		Where("id = ?", verificationData.ID).
 		Update("code_used", true)

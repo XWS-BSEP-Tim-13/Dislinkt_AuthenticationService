@@ -1,9 +1,11 @@
 package domain
 
+import "context"
+
 type ForgotPasswordTokenStore interface {
-	Create(user *ForgotPasswordToken) (*ForgotPasswordToken, error)
-	GetById(id int) (*ForgotPasswordToken, error)
-	GetByToken(token string) (*ForgotPasswordToken, error)
-	DeleteAll()
-	Delete(id int)
+	Create(ctx context.Context, user *ForgotPasswordToken) (*ForgotPasswordToken, error)
+	GetById(ctx context.Context, id int) (*ForgotPasswordToken, error)
+	GetByToken(ctx context.Context, token string) (*ForgotPasswordToken, error)
+	DeleteAll(ctx context.Context)
+	Delete(ctx context.Context, id int)
 }
