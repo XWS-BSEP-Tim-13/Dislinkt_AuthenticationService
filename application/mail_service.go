@@ -20,8 +20,10 @@ func NewMailServiceService() *MailService {
 }
 
 func (service *MailService) SendForgotPasswordMail(ctx context.Context, token, email string) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "SendForgotPasswordMail")
+	span := tracer.StartSpanFromContext(ctx, "SendForgotPasswordMail")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	from := service.emailConfig.EmailUsername
 	password := service.emailConfig.EmailPassword
@@ -48,8 +50,10 @@ func (service *MailService) SendForgotPasswordMail(ctx context.Context, token, e
 }
 
 func (service *MailService) SendPasswordlessCode(ctx context.Context, email string, secureCode string) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "SendPasswordlessCode")
+	span := tracer.StartSpanFromContext(ctx, "SendPasswordlessCode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	from := service.emailConfig.EmailUsername
 	password := service.emailConfig.EmailPassword
@@ -75,8 +79,10 @@ func (service *MailService) SendPasswordlessCode(ctx context.Context, email stri
 }
 
 func (service *MailService) SendVerificationEmail(ctx context.Context, email string, code string) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "SendVerificationEmail")
+	span := tracer.StartSpanFromContext(ctx, "SendVerificationEmail")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	to := []string{
 		email,

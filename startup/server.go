@@ -12,8 +12,9 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/persistence"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/logger"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/startup/config"
-	tracer "github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
+	otgrpc "github.com/opentracing-contrib/go-grpc"
 	otgo "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
@@ -164,6 +165,10 @@ func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationH
 
 	opts := []grpc.ServerOption{
 		grpc.Creds(credentials.NewTLS(config)),
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(server.tracer)),
+		grpc.StreamInterceptor(
+			otgrpc.OpenTracingStreamServerInterceptor(server.tracer)),
 	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))

@@ -24,8 +24,10 @@ func NewVerificationPostgresStore(db *gorm.DB) (domain.VerificationStore, error)
 }
 
 func (store *VerificationPostgresStore) Create(ctx context.Context, data *domain.VerificationData) (*domain.VerificationData, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB Create")
+	span := tracer.StartSpanFromContext(ctx, "DB Create")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	result := store.db.Create(data)
 	if result.Error != nil {
@@ -38,8 +40,10 @@ func (store *VerificationPostgresStore) Create(ctx context.Context, data *domain
 }
 
 func (store *VerificationPostgresStore) GetById(ctx context.Context, id int) (*domain.VerificationData, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetById")
+	span := tracer.StartSpanFromContext(ctx, "DB GetById")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var data domain.VerificationData
 	result := store.db.Find(&data, id)
@@ -52,8 +56,10 @@ func (store *VerificationPostgresStore) GetById(ctx context.Context, id int) (*d
 }
 
 func (store *VerificationPostgresStore) GetByCode(ctx context.Context, code string) (*domain.VerificationData, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetByCode")
+	span := tracer.StartSpanFromContext(ctx, "DB GetByCode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var data domain.VerificationData
 	result := store.db.Where("code = ?", code).Find(&data)
@@ -66,8 +72,10 @@ func (store *VerificationPostgresStore) GetByCode(ctx context.Context, code stri
 }
 
 func (store *VerificationPostgresStore) UpdateUsedData(ctx context.Context, verificationData *domain.VerificationData) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB UpdateUsedData")
+	span := tracer.StartSpanFromContext(ctx, "DB UpdateUsedData")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	tx := store.db.Model(&domain.VerificationData{}).
 		Where("id = ?", verificationData.ID).

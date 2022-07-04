@@ -66,7 +66,7 @@ func (store *AuthenticationPostgresStore) GetByID(ctx context.Context, id int) (
 }
 
 func (store *AuthenticationPostgresStore) GetActiveByUsername(ctx context.Context, username string) (*domain.User, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Connect")
+	span := tracer.StartSpanFromContext(ctx, "Connect")
 	defer span.Finish()
 
 	var user domain.User

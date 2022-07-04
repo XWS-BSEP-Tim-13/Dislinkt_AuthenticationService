@@ -22,8 +22,10 @@ func NewActiveMQ(addr string) *ActiveMQ {
 }
 
 func (service *ActiveMQ) Connect(ctx context.Context) (*stomp.Conn, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Connect")
+	span := tracer.StartSpanFromContext(ctx, "Connect")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	fmt.Printf("Address %s\n", service.Addr)
 	return stomp.Dial("tcp", "activemq:61613")
@@ -31,8 +33,10 @@ func (service *ActiveMQ) Connect(ctx context.Context) (*stomp.Conn, error) {
 
 // Send msg to destination
 func (service *ActiveMQ) Send(ctx context.Context, token string) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Send")
+	span := tracer.StartSpanFromContext(ctx, "Send")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	conn, err := service.Connect(ctx)
 	if err != nil {
@@ -43,16 +47,18 @@ func (service *ActiveMQ) Send(ctx context.Context, token string) error {
 	fmt.Printf("Connected to activemq\n")
 	defer conn.Disconnect()
 	return conn.Send(
-		TOPIC,         // destination
-		"text/plain",  // content-type
+		TOPIC,        // destination
+		"text/plain", // content-type
 		[]byte(token)) // body
 }
 
 // Subscribe Message from destination
 // func handler handle msg reveived from destination
 func (service *ActiveMQ) Subscribe(ctx context.Context, destination string, handler func(err error, msg string)) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Subscribe")
+	span := tracer.StartSpanFromContext(ctx, "Subscribe")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	conn, err := service.Connect(ctx)
 	if err != nil {

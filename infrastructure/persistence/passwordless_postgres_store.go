@@ -24,8 +24,10 @@ func NewPasswordlessPostgresStore(db *gorm.DB) (domain.PasswordlessStore, error)
 }
 
 func (store PasswordlessPostgresStore) GetById(ctx context.Context, id int) (*domain.PasswordlessCredentials, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetById")
+	span := tracer.StartSpanFromContext(ctx, "DB GetById")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var passwordless domain.PasswordlessCredentials
 	result := store.db.Find(&passwordless, id)
@@ -38,8 +40,10 @@ func (store PasswordlessPostgresStore) GetById(ctx context.Context, id int) (*do
 }
 
 func (store PasswordlessPostgresStore) GetByEmail(ctx context.Context, email string) (*domain.PasswordlessCredentials, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB GetByEmail")
+	span := tracer.StartSpanFromContext(ctx, "DB GetByEmail")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var user domain.PasswordlessCredentials
 	result := store.db.Where("email = ?", email).Find(&user)
@@ -52,8 +56,10 @@ func (store PasswordlessPostgresStore) GetByEmail(ctx context.Context, email str
 }
 
 func (store PasswordlessPostgresStore) Create(ctx context.Context, passwordless *domain.PasswordlessCredentials) (*domain.PasswordlessCredentials, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "DB Create")
+	span := tracer.StartSpanFromContext(ctx, "DB Create")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	result := store.db.Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "email"}},

@@ -29,7 +29,7 @@ func (manager *JwtManager) GenerateHashPassword(ctx context.Context, password st
 }
 
 func (manager *JwtManager) GenerateJWT(ctx context.Context, username, role string) (string, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateJWT")
+	span := tracer.StartSpanFromContext(ctx, "GenerateJWT")
 	defer span.Finish()
 
 	var mySigningKey = []byte(manager.secretKey)
@@ -51,7 +51,7 @@ func (manager *JwtManager) GenerateJWT(ctx context.Context, username, role strin
 }
 
 func (manager *JwtManager) GenerateJWTWithEmail(ctx context.Context, email, role string) (string, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateJWTWithEmail")
+	span := tracer.StartSpanFromContext(ctx, "GenerateJWTWithEmail")
 	defer span.Finish()
 
 	var mySigningKey = []byte(manager.secretKey)
@@ -73,7 +73,7 @@ func (manager *JwtManager) GenerateJWTWithEmail(ctx context.Context, email, role
 }
 
 func (manager *JwtManager) CheckPasswordHash(ctx context.Context, password, hash string) bool {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CheckPasswordHash")
+	span := tracer.StartSpanFromContext(ctx, "CheckPasswordHash")
 	defer span.Finish()
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)

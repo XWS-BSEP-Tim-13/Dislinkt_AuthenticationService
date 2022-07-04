@@ -86,8 +86,10 @@ func (service *AuthenticationService) Login(ctx context.Context, credentials *do
 }
 
 func (service *AuthenticationService) Register(ctx context.Context, user *domain.User) (*domain.User, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Register")
+	span := tracer.StartSpanFromContext(ctx, "Register")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	dbUser, _ := service.store.GetByUsername(ctx, (*user).Username)
 	if (*dbUser).Username != "" {
@@ -137,8 +139,10 @@ func (service *AuthenticationService) Register(ctx context.Context, user *domain
 }
 
 func (service *AuthenticationService) ActivateAccount(ctx context.Context, code string) (*domain.ActivatedAccount, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "ActivateAccount")
+	span := tracer.StartSpanFromContext(ctx, "ActivateAccount")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	verificationData, err := service.verificationStore.GetByCode(ctx, code)
 	if err != nil {
@@ -195,8 +199,10 @@ func (service *AuthenticationService) ActivateAccount(ctx context.Context, code 
 }
 
 func (service *AuthenticationService) SaveToken(ctx context.Context, email string) (*domain.ForgotPasswordToken, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "SaveToken")
+	span := tracer.StartSpanFromContext(ctx, "SaveToken")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	var request = domain.ForgotPasswordToken{
 		Email:        email,
@@ -207,15 +213,19 @@ func (service *AuthenticationService) SaveToken(ctx context.Context, email strin
 }
 
 func (service *AuthenticationService) CheckIfTokenExists(ctx context.Context, token string) (*domain.ForgotPasswordToken, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIfTokenExists")
+	span := tracer.StartSpanFromContext(ctx, "CheckIfTokenExists")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	return service.tokenStore.GetByToken(ctx, token)
 }
 
 func (service *AuthenticationService) ChangePassword(ctx context.Context, dto *domain.ChangePasswordDto, tokenObj *domain.ForgotPasswordToken) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "ChangePassword")
+	span := tracer.StartSpanFromContext(ctx, "ChangePassword")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	fmt.Printf("Changing password%s, %s \n", dto.Password, dto.ConfirmPassword)
 	if dto.Password != dto.ConfirmPassword {
@@ -242,15 +252,19 @@ func (service *AuthenticationService) ChangePassword(ctx context.Context, dto *d
 }
 
 func (service *AuthenticationService) IsAuthorized(ctx context.Context, token *domain.Token) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "IsAuthorized")
+	span := tracer.StartSpanFromContext(ctx, "IsAuthorized")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	//service.store.Create()
 }
 
 func (service *AuthenticationService) GetByEmail(ctx context.Context, email string) (*domain.User, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GetByEmail")
+	span := tracer.StartSpanFromContext(ctx, "GetByEmail")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, err := service.store.GetActiveByEmail(ctx, email)
 	if err != nil {
@@ -260,16 +274,20 @@ func (service *AuthenticationService) GetByEmail(ctx context.Context, email stri
 }
 
 func (service *AuthenticationService) CreatePasswordlessCredentials(ctx context.Context, credentials *domain.PasswordlessCredentials) (*domain.PasswordlessCredentials, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CreatePasswordlessCredentials")
+	span := tracer.StartSpanFromContext(ctx, "CreatePasswordlessCredentials")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	newCredentials, err := service.passwordlessStore.Create(ctx, credentials)
 	return newCredentials, err
 }
 
 func (service *AuthenticationService) GenerateSecureCode(ctx context.Context, length int) (string, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "GenerateSecureCode")
+	span := tracer.StartSpanFromContext(ctx, "GenerateSecureCode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	otpChars := "1234567890"
 	buffer := make([]byte, length)
@@ -287,16 +305,20 @@ func (service *AuthenticationService) GenerateSecureCode(ctx context.Context, le
 }
 
 func (service *AuthenticationService) HashSecureCode(ctx context.Context, code string) (string, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "HashSecureCode")
+	span := tracer.StartSpanFromContext(ctx, "HashSecureCode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	hashed, err := service.jwtManager.GenerateHashPassword(ctx, code)
 	return hashed, err
 }
 
 func (service *AuthenticationService) SendApiToken(ctx context.Context, username string) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "SendApiToken")
+	span := tracer.StartSpanFromContext(ctx, "SendApiToken")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, err := service.store.GetByUsername(ctx, username)
 	if err != nil {
@@ -312,8 +334,10 @@ func (service *AuthenticationService) SendApiToken(ctx context.Context, username
 }
 
 func (service *AuthenticationService) CheckIfUserExists(ctx context.Context, email string) bool {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIfUserExists")
+	span := tracer.StartSpanFromContext(ctx, "CheckIfUserExists")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	_, err := service.store.GetByEmail(ctx, email)
 	if err != nil {
@@ -324,8 +348,10 @@ func (service *AuthenticationService) CheckIfUserExists(ctx context.Context, ema
 }
 
 func (service *AuthenticationService) ReceiveJobOffer(ctx context.Context) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "ReceiveJobOffer")
+	span := tracer.StartSpanFromContext(ctx, "ReceiveJobOffer")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	service.activemqService.Subscribe(ctx, "jobOffer.queue", DecodeBody)
 }
@@ -338,8 +364,10 @@ func DecodeBody(err error, body string) {
 }
 
 func (service *AuthenticationService) LoginWithCode(ctx context.Context, credentials *domain.PasswordlessCredentials) (*domain.Token, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "LoginWithCode")
+	span := tracer.StartSpanFromContext(ctx, "LoginWithCode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	dbUser, userError := service.GetByEmail(ctx, credentials.Email)
 	if userError != nil {
@@ -381,8 +409,10 @@ func (service *AuthenticationService) LoginWithCode(ctx context.Context, credent
 }
 
 func (service *AuthenticationService) RegisterToGoogleAuthenticatior(ctx context.Context, username string) ([]byte, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "RegisterToGoogleAuthenticatior")
+	span := tracer.StartSpanFromContext(ctx, "RegisterToGoogleAuthenticatior")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, _ := service.store.GetByUsername(ctx, username)
 	runtime.GOMAXPROCS(runtime.NumCPU())
@@ -408,8 +438,10 @@ func (service *AuthenticationService) RegisterToGoogleAuthenticatior(ctx context
 }
 
 func (service *AuthenticationService) CheckMFACode(ctx context.Context, username, token string) error {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CheckMFACode")
+	span := tracer.StartSpanFromContext(ctx, "CheckMFACode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, _ := service.store.GetByUsername(ctx, username)
 	fmt.Println(user)
@@ -437,8 +469,10 @@ func (service *AuthenticationService) CheckMFACode(ctx context.Context, username
 }
 
 func (service *AuthenticationService) CheckMFACodeUnauthorized(ctx context.Context, username, token string) (*domain.Token, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CheckMFACodeUnauthorized")
+	span := tracer.StartSpanFromContext(ctx, "CheckMFACodeUnauthorized")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, _ := service.store.GetByUsername(ctx, username)
 	fmt.Println(user)
@@ -478,8 +512,10 @@ func (service *AuthenticationService) CheckMFACodeUnauthorized(ctx context.Conte
 }
 
 func (service *AuthenticationService) ResetSetMFACode(ctx context.Context, username string) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "ResetSetMFACode")
+	span := tracer.StartSpanFromContext(ctx, "ResetSetMFACode")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, _ := service.store.GetByUsername(ctx, username)
 	user.MFASecret = ""
@@ -487,8 +523,10 @@ func (service *AuthenticationService) ResetSetMFACode(ctx context.Context, usern
 }
 
 func (service *AuthenticationService) CheckIfMFAActive(ctx context.Context, username string) bool {
-	span := tracer.StartSpanFromContextMetadata(ctx, "CheckIfMFAActive")
+	span := tracer.StartSpanFromContext(ctx, "CheckIfMFAActive")
 	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	user, _ := service.store.GetByUsername(ctx, username)
 	if user.MFASecret == "" {
