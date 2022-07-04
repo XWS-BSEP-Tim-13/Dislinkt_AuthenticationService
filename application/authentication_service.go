@@ -45,7 +45,7 @@ func NewAuthenticationService(store domain.UserStore, tokenStore domain.ForgotPa
 }
 
 func (service *AuthenticationService) Login(ctx context.Context, credentials *domain.Credentials) (*domain.Token, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Login")
+	span := tracer.StartSpanFromContext(ctx, "Login")
 	defer span.Finish()
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)

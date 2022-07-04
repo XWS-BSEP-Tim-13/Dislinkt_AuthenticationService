@@ -35,7 +35,7 @@ func NewAuthenticationHandler(service *application.AuthenticationService, mailSe
 }
 
 func (handler *AuthenticationHandler) Login(ctx context.Context, request *pb.LoginRequest) (*pb.Token, error) {
-	span := tracer.StartSpanFromContextMetadata(ctx, "Login")
+	span := tracer.StartSpanFromContext(ctx, "Login")
 	defer span.Finish()
 
 	ctx = tracer.ContextWithSpan(context.Background(), span)
