@@ -10,15 +10,22 @@ import (
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/infrastructure/persistence"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/logger"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/startup/config"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/util"
+	otgrpc "github.com/opentracing-contrib/go-grpc"
+	otgo "github.com/opentracing/opentracing-go"
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
+	"io"
+	"io/ioutil"
 	"log"
 	"net"
 )
 
 type Server struct {
 	config *config.Config
+	tracer otgo.Tracer
+	closer io.Closer
 }
 
 const (
@@ -28,8 +35,13 @@ const (
 )
 
 func NewServer(config *config.Config) *Server {
+	tracer, closer := tracer.Init()
+	otgo.SetGlobalTracer(tracer)
+
 	return &Server{
 		config: config,
+		tracer: tracer,
+		closer: closer,
 	}
 }
 
@@ -64,13 +76,13 @@ func (server *Server) initPostgresClient() *gorm.DB {
 }
 func (server *Server) initTokenStore(client *gorm.DB) domain.ForgotPasswordTokenStore {
 	store, err := persistence.NewForgotPasswordTokenPostgresStore(client)
-	store.DeleteAll()
+	store.DeleteAll(context.TODO())
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	for _, Token := range tokens {
-		_, err := store.Create(Token)
+		_, err := store.Create(context.TODO(), Token)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -84,9 +96,9 @@ func (server *Server) initProductStore(client *gorm.DB) domain.UserStore {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store.DeleteAll()
+	store.DeleteAll(context.TODO())
 	for _, User := range users {
-		_, err := store.Create(User)
+		_, err := store.Create(context.TODO(), User)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -146,11 +158,14 @@ func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationH
 		Certificates: []tls.Certificate{cert},
 		ClientAuth:   tls.RequestClientCert,
 		ClientCAs:    certPool,
-	}
+	}*/
 
 	opts := []grpc.ServerOption{
-		grpc.Creds(credentials.NewTLS(config)),
-	}*/
+		grpc.UnaryInterceptor(
+			otgrpc.OpenTracingServerInterceptor(server.tracer)),
+		grpc.StreamInterceptor(
+			otgrpc.OpenTracingStreamServerInterceptor(server.tracer)),
+	}
 
 	listener, err := net.Listen("tcp", fmt.Sprintf(":%s", server.config.Port))
 	if err != nil {
@@ -161,4 +176,16 @@ func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationH
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
 	}
+}
+
+func (server *Server) GetTracer() otgo.Tracer {
+	return server.tracer
+}
+
+func (server *Server) GetCloser() io.Closer {
+	return server.closer
+}
+
+func (server *Server) CloseTracer() error {
+	return server.closer.Close()
 }

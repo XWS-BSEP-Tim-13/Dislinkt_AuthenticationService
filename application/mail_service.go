@@ -1,8 +1,10 @@
 package application
 
 import (
+	"context"
 	"fmt"
 	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/startup/config"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"net/smtp"
 	"os"
 )
@@ -17,7 +19,11 @@ func NewMailServiceService() *MailService {
 	}
 }
 
-func (service *MailService) SendForgotPasswordMail(token, email string) {
+func (service *MailService) SendForgotPasswordMail(ctx context.Context, token, email string) {
+	span := tracer.StartSpanFromContext(ctx, "SendForgotPasswordMail")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	from := service.emailConfig.EmailUsername
 	password := service.emailConfig.EmailPassword
@@ -43,7 +49,11 @@ func (service *MailService) SendForgotPasswordMail(token, email string) {
 	fmt.Println("Email Sent Successfully!")
 }
 
-func (service *MailService) SendPasswordlessCode(email string, secureCode string) error {
+func (service *MailService) SendPasswordlessCode(ctx context.Context, email string, secureCode string) error {
+	span := tracer.StartSpanFromContext(ctx, "SendPasswordlessCode")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	from := service.emailConfig.EmailUsername
 	password := service.emailConfig.EmailPassword
@@ -68,7 +78,11 @@ func (service *MailService) SendPasswordlessCode(email string, secureCode string
 	return err
 }
 
-func (service *MailService) SendVerificationEmail(email string, code string) error {
+func (service *MailService) SendVerificationEmail(ctx context.Context, email string, code string) error {
+	span := tracer.StartSpanFromContext(ctx, "SendVerificationEmail")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
 
 	to := []string{
 		email,

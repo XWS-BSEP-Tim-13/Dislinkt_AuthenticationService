@@ -1,8 +1,10 @@
 package application
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"github.com/XWS-BSEP-Tim-13/Dislinkt_AuthenticationService/tracer"
 	"github.com/go-stomp/stomp"
 )
 
@@ -19,14 +21,24 @@ func NewActiveMQ(addr string) *ActiveMQ {
 	return &ActiveMQ{addr}
 }
 
-func (service *ActiveMQ) Connect() (*stomp.Conn, error) {
+func (service *ActiveMQ) Connect(ctx context.Context) (*stomp.Conn, error) {
+	span := tracer.StartSpanFromContext(ctx, "Connect")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
 	fmt.Printf("Address %s\n", service.Addr)
 	return stomp.Dial("tcp", "activemq:61613")
 }
 
 // Send msg to destination
-func (service *ActiveMQ) Send(token string) error {
-	conn, err := service.Connect()
+func (service *ActiveMQ) Send(ctx context.Context, token string) error {
+	span := tracer.StartSpanFromContext(ctx, "Send")
+	defer span.Finish()
+
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	conn, err := service.Connect(ctx)
 	if err != nil {
 		fmt.Printf("Unable to connect to activemq\n")
 		fmt.Printf("%s\n", err)
@@ -35,16 +47,20 @@ func (service *ActiveMQ) Send(token string) error {
 	fmt.Printf("Connected to activemq\n")
 	defer conn.Disconnect()
 	return conn.Send(
-		TOPIC,         // destination
-		"text/plain",  // content-type
+		TOPIC,        // destination
+		"text/plain", // content-type
 		[]byte(token)) // body
 }
 
 // Subscribe Message from destination
 // func handler handle msg reveived from destination
-func (service *ActiveMQ) Subscribe(destination string, handler func(err error, msg string)) error {
+func (service *ActiveMQ) Subscribe(ctx context.Context, destination string, handler func(err error, msg string)) error {
+	span := tracer.StartSpanFromContext(ctx, "Subscribe")
+	defer span.Finish()
 
-	conn, err := service.Connect()
+	ctx = tracer.ContextWithSpan(context.Background(), span)
+
+	conn, err := service.Connect(ctx)
 	if err != nil {
 		return err
 	}

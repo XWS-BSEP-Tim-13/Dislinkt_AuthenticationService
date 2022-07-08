@@ -1,15 +1,17 @@
 package domain
 
+import "context"
+
 type UserStore interface {
-	Create(user *User) (*User, error)
-	GetAllActiveAccounts() (*[]User, error)
-	GetActiveByID(id int) (*User, error)
-	DeleteAll()
-	GetActiveByUsername(username string) (*User, error)
-	GetByUsername(username string) (*User, error)
-	GetActiveByEmail(email string) (*User, error)
-	GetByEmail(email string) (*User, error)
-	UpdatePassword(user *User) error
-	UpdateIsActive(user *User) error
-	UpdateMFASecret(user *User) error
+	Create(ctx context.Context, user *User) (*User, error)
+	GetAllActiveAccounts(ctx context.Context) (*[]User, error)
+	GetActiveByID(ctx context.Context, id int) (*User, error)
+	DeleteAll(ctx context.Context)
+	GetActiveByUsername(ctx context.Context, username string) (*User, error)
+	GetByUsername(ctx context.Context, username string) (*User, error)
+	GetActiveByEmail(ctx context.Context, email string) (*User, error)
+	GetByEmail(ctx context.Context, email string) (*User, error)
+	UpdatePassword(ctx context.Context, user *User) error
+	UpdateIsActive(ctx context.Context, user *User) error
+	UpdateMFASecret(ctx context.Context, user *User) error
 }
