@@ -17,7 +17,6 @@ import (
 	"google.golang.org/grpc"
 	"gorm.io/gorm"
 	"io"
-	"io/ioutil"
 	"log"
 	"net"
 )
@@ -171,7 +170,7 @@ func (server *Server) startGrpcServer(authenticationHandler *api.AuthenticationH
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(opts...)
 	auth.RegisterAuthenticationServiceServer(grpcServer, authenticationHandler)
 	if err := grpcServer.Serve(listener); err != nil {
 		log.Fatalf("failed to serve: %s", err)
