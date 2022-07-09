@@ -47,6 +47,14 @@ var users = []*domain.User{
 		Email:     "lenka@gmail.com",
 		MFASecret: "",
 	},
+	{
+		Username:  "admin",
+		Password:  "$2a$10$3kfQZW0qQFJIlfDcadR9UOmPwUDDz4wwkcxxAi1aQmfqZqRxAU/FW",
+		IsActive:  true,
+		Role:      "ADMIN",
+		Email:     "admin@gmail.com",
+		MFASecret: "",
+	},
 }
 
 var tokens = []*domain.ForgotPasswordToken{
